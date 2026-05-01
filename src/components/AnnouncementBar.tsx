@@ -19,8 +19,8 @@ export default function AnnouncementBar() {
   }, [announcements.length]);
 
   return (
-    <div className="w-full bg-linear-to-r from-[#5b21b6] via-[#7c3aed] to-[#5b21b6] text-white text-center py-2.5 px-4">
-      <span className="font-mono text-[11px] tracking-[0.15em] uppercase">
+    <div className="w-full bg-linear-to-r from-[#5b21b6] via-[#7c3aed] to-[#5b21b6] text-white text-center py-3 px-4">
+      <span className="font-mono text-[12px] md:text-[13px] tracking-[0.14em] uppercase">
         {announcements[currentIndex]}
       </span>
     </div>

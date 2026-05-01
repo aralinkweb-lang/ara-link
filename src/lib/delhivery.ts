@@ -90,20 +90,42 @@ export async function createDelhiveryShipment(
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
 
-    const pkg = response.data?.packages?.[0];
+    const body = response.data as
+      | DelhiveryCreateResponse
+      | { rmk?: string; error?: string; success?: boolean; packages?: unknown[] }
+      | undefined;
+
+    const pkg = (body as DelhiveryCreateResponse | undefined)?.packages?.[0];
+
     if (!pkg || pkg.status !== "Success") {
-      const remarks = pkg?.remarks?.join(", ") || "Unknown error";
-      throw new Error(`Delhivery shipment creation failed: ${remarks}`);
+      // Delhivery surfaces the real failure reason in a few different fields
+      // depending on which validation failed. Pull whichever one is populated.
+      const reason =
+        (pkg?.remarks && pkg.remarks.length > 0 && pkg.remarks.join(", ")) ||
+        (body && typeof body === "object" && "rmk" in body && (body as { rmk?: string }).rmk) ||
+        (body && typeof body === "object" && "error" in body && (body as { error?: string }).error) ||
+        JSON.stringify(body);
+
+      console.error("Delhivery rejected shipment. Full response:", JSON.stringify(body, null, 2));
+      throw new Error(`Delhivery shipment creation failed: ${reason}`);
     }
 
-    return response.data as DelhiveryCreateResponse;
+    return body as DelhiveryCreateResponse;
   } catch (error: unknown) {
-    const axiosError = error as { response?: { data?: unknown }; message?: string };
+    const axiosError = error as { response?: { data?: unknown; status?: number }; message?: string };
+    const responseData = axiosError.response?.data;
     console.error(
       "Delhivery create shipment error:",
-      axiosError.response?.data || axiosError.message || error
+      responseData ? JSON.stringify(responseData, null, 2) : axiosError.message || error
     );
-    throw new Error("Failed to create Delhivery shipment");
+    // Preserve the original message instead of replacing it with a generic one,
+    // so the API caller / log reader can see why it actually failed.
+    if (error instanceof Error) throw error;
+    throw new Error(
+      typeof responseData === "string"
+        ? responseData
+        : axiosError.message || "Failed to create Delhivery shipment"
+    );
   }
 }
 
@@ -146,6 +168,65 @@ export async function cancelDelhiveryShipment(waybill: string) {
       axiosError.response?.data || axiosError.message || error
     );
     throw new Error("Failed to cancel Delhivery shipment");
+  }
+}
+
+// Register a pickup / warehouse location with Delhivery.
+// Run this ONCE per environment (staging or prod). After it succeeds, the
+// pickup name can be used as `pickup_location.name` in createDelhiveryShipment.
+export async function registerDelhiveryPickup() {
+  const client = getDelhiveryClient();
+
+  const name = process.env.DELHIVERY_PICKUP_NAME?.trim();
+  const pin = process.env.DELHIVERY_PICKUP_PINCODE?.trim();
+  const city = process.env.DELHIVERY_PICKUP_CITY?.trim();
+  const state = process.env.DELHIVERY_PICKUP_STATE?.trim();
+  const address = process.env.DELHIVERY_PICKUP_ADDRESS?.trim();
+  const phone = process.env.DELHIVERY_PICKUP_PHONE?.trim();
+  const sellerName = process.env.DELHIVERY_SELLER_NAME?.trim() || name;
+
+  if (!name || !pin || !city || !state || !address || !phone) {
+    throw new Error(
+      "Pickup details missing. Set DELHIVERY_PICKUP_NAME / PINCODE / CITY / STATE / ADDRESS / PHONE in .env.local."
+    );
+  }
+
+  const payload = {
+    name,
+    email: "support@ara-skincare.com",
+    phone,
+    address,
+    city,
+    pin,
+    country: "India",
+    registered_name: sellerName,
+    return_address: address,
+    return_pin: pin,
+    return_city: city,
+    return_state: state,
+    return_country: "India",
+  };
+
+  try {
+    const response = await client.post(
+      "/api/backend/clientwarehouse/create/",
+      payload,
+      { headers: { "Content-Type": "application/json" } }
+    );
+    return response.data;
+  } catch (error: unknown) {
+    const axiosError = error as { response?: { data?: unknown; status?: number }; message?: string };
+    const responseData = axiosError.response?.data;
+    console.error(
+      "Delhivery pickup registration error:",
+      responseData ? JSON.stringify(responseData, null, 2) : axiosError.message || error
+    );
+    if (error instanceof Error) throw error;
+    throw new Error(
+      typeof responseData === "string"
+        ? responseData
+        : axiosError.message || "Failed to register pickup location"
+    );
   }
 }
 

@@ -30,42 +30,42 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
 
           {/* Top-left badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+          <div className="absolute top-4 left-4 flex flex-col gap-2">
             {product.badges.includes("Limited Stock") && (
-              <span className="badge badge-gold text-[8px]">🔥 Limited</span>
+              <span className="badge badge-gold">🔥 Limited</span>
             )}
             {product.stock < 20 && (
-              <span className="badge badge-red text-[8px]">Only {product.stock} Left</span>
+              <span className="badge badge-red">Only {product.stock} Left</span>
             )}
           </div>
 
           {/* Discount badge */}
           {discount > 0 && (
-            <div className="absolute top-3 right-3">
-              <span className="badge badge-purple text-[8px]">-{discount}%</span>
+            <div className="absolute top-4 right-4">
+              <span className="badge badge-purple">-{discount}%</span>
             </div>
           )}
         </div>
 
         {/* Content */}
-        <div className="p-4 md:p-5 flex flex-col flex-1">
-          <p className="font-mono text-[9px] md:text-[10px] tracking-[0.18em] uppercase text-[#7c3aed] mb-1.5">
+        <div className="p-5 md:p-6 flex flex-col flex-1">
+          <p className="font-mono text-[11px] md:text-[12px] tracking-[0.18em] uppercase text-[#7c3aed] mb-2 font-medium">
             {product.category}
           </p>
-          <h3 className="font-serif text-base md:text-lg font-medium text-[#0f0a1e] mb-1 group-hover:text-[#7c3aed] transition-colors leading-snug">
+          <h3 className="font-serif text-lg md:text-xl font-medium text-[#0f0a1e] mb-2 group-hover:text-[#7c3aed] transition-colors leading-snug">
             {product.name}
           </h3>
-          <p className="text-xs md:text-sm text-[#6b7280] mb-3 line-clamp-2 flex-1">
+          <p className="text-[14px] md:text-[15px] text-[#6b7280] mb-4 line-clamp-2 flex-1 leading-relaxed">
             {product.shortDescription}
           </p>
 
           {/* Rating */}
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-4">
             <div className="flex items-center gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  size={10}
+                  size={13}
                   className={
                     i < Math.floor(product.rating)
                       ? "fill-[#c9a96e] text-[#c9a96e]"
@@ -74,18 +74,18 @@ export default function ProductCard({ product }: ProductCardProps) {
                 />
               ))}
             </div>
-            <span className="font-mono text-[10px] text-[#6b7280]">
+            <span className="font-mono text-[12px] text-[#6b7280]">
               {product.rating} ({product.reviewCount})
             </span>
           </div>
 
           {/* Price */}
-          <div className="flex items-baseline gap-2 mt-auto">
-            <span className="font-semibold text-lg text-[#0f0a1e]">
+          <div className="flex items-baseline gap-2.5 mt-auto">
+            <span className="font-semibold text-xl text-[#0f0a1e]">
               {formatPrice(product.price)}
             </span>
             {product.originalPrice > product.price && (
-              <span className="text-sm text-[#9ca3af] line-through">
+              <span className="text-[15px] text-[#9ca3af] line-through">
                 {formatPrice(product.originalPrice)}
               </span>
             )}

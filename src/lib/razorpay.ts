@@ -2,11 +2,13 @@ import Razorpay from "razorpay";
 
 // Server-side Razorpay instance
 export function getRazorpayInstance() {
-  const keyId = process.env.RAZORPAY_KEY_ID;
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  const keyId = process.env.RAZORPAY_KEY_ID?.trim();
+  const keySecret = process.env.RAZORPAY_KEY_SECRET?.trim();
 
   if (!keyId || !keySecret) {
-    throw new Error("Razorpay credentials not configured");
+    throw new Error(
+      "Razorpay credentials not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in .env.local and restart the dev server."
+    );
   }
 
   return new Razorpay({

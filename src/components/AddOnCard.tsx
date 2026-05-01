@@ -13,7 +13,7 @@ export default function AddOnCard({ addon, onToggle, selected = false }: AddOnCa
   return (
     <div
       onClick={() => onToggle(addon.id, !selected)}
-      className={`border rounded-xl cursor-pointer p-4 flex gap-4 items-start relative overflow-hidden transition-all duration-200 ${
+      className={`border rounded-xl cursor-pointer p-5 flex gap-4 items-start relative overflow-hidden transition-all duration-200 ${
         selected
           ? "bg-[#faf8ff] border-[#7c3aed] shadow-[0_0_0_3px_rgba(124,58,237,0.08)]"
           : "bg-white border-[rgba(124,58,237,0.15)] hover:border-[rgba(124,58,237,0.3)] hover:shadow-sm"
@@ -21,7 +21,7 @@ export default function AddOnCard({ addon, onToggle, selected = false }: AddOnCa
     >
       {/* Status badge */}
       <div
-        className={`absolute top-0 right-0 font-mono text-[8px] tracking-[0.15em] py-1 px-2.5 rounded-bl-lg ${
+        className={`absolute top-0 right-0 font-mono text-[11px] font-medium tracking-[0.12em] py-1.5 px-3 rounded-bl-lg ${
           selected ? "bg-[#7c3aed] text-white" : "bg-[#c9a96e] text-white"
         }`}
       >
@@ -29,14 +29,14 @@ export default function AddOnCard({ addon, onToggle, selected = false }: AddOnCa
       </div>
 
       {/* Icon */}
-      <div className="w-14 h-14 bg-[#f5f3ff] border border-[rgba(124,58,237,0.12)] rounded-lg flex items-center justify-center text-2xl shrink-0">
+      <div className="w-16 h-16 bg-[#f5f3ff] border border-[rgba(124,58,237,0.12)] rounded-lg flex items-center justify-center text-2xl shrink-0">
         {addon.icon}
       </div>
 
       {/* Content */}
-      <div className="flex-1 pr-8">
-        <h4 className="text-sm font-medium text-[#0f0a1e] mb-1">{addon.name}</h4>
-        <p className="text-xs text-[#6b7280] leading-relaxed mb-2">
+      <div className="flex-1 pr-10">
+        <h4 className="text-base font-medium text-[#0f0a1e] mb-1.5">{addon.name}</h4>
+        <p className="text-sm text-[#6b7280] leading-relaxed mb-3">
           {addon.description}
           {addon.amazonLink && (
             <a
@@ -50,10 +50,10 @@ export default function AddOnCard({ addon, onToggle, selected = false }: AddOnCa
             </a>
           )}
         </p>
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-semibold text-base text-[#0f0a1e]">{formatPrice(addon.price)}</span>
-          <span className="text-xs text-[#9ca3af] line-through">{formatPrice(addon.originalPrice)}</span>
-          <span className="badge badge-purple text-[9px]">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <span className="font-semibold text-lg text-[#0f0a1e]">{formatPrice(addon.price)}</span>
+          <span className="text-sm text-[#9ca3af] line-through">{formatPrice(addon.originalPrice)}</span>
+          <span className="badge badge-purple">
             Save {formatPrice(addon.originalPrice - addon.price)}
           </span>
         </div>
@@ -61,11 +61,11 @@ export default function AddOnCard({ addon, onToggle, selected = false }: AddOnCa
 
       {/* Checkbox */}
       <div
-        className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 mt-5 transition-all ${
+        className={`w-6 h-6 rounded-md border flex items-center justify-center shrink-0 mt-6 transition-all ${
           selected ? "bg-[#7c3aed] border-[#7c3aed] text-white" : "border-[rgba(124,58,237,0.25)]"
         }`}
       >
-        {selected && <Check size={12} />}
+        {selected && <Check size={14} />}
       </div>
     </div>
   );

@@ -54,12 +54,24 @@ html {
   scroll-behavior: smooth;
 }
 
+html {
+  font-size: 16px;
+}
+@media (min-width: 1024px) {
+  html { font-size: 17px; }
+}
+
 body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-dm-sans), "DM Sans", sans-serif;
   font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.6;
+  letter-spacing: 0.005em;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ::-webkit-scrollbar {
@@ -112,21 +124,22 @@ body {
   color: #ffffff;
   font-family: "DM Sans", sans-serif;
   font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.12em;
+  font-size: 13px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 14px 28px;
+  padding: 16px 32px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.22s ease;
   text-align: center;
   text-decoration: none;
+  line-height: 1.2;
 }
 @media (min-width: 768px) {
   .btn-primary {
-    font-size: 13px;
-    padding: 15px 32px;
+    font-size: 14px;
+    padding: 18px 36px;
   }
 }
 .btn-primary:hover {
@@ -145,20 +158,21 @@ body {
   color: var(--text-muted);
   font-family: "DM Sans", sans-serif;
   font-weight: 500;
-  font-size: 12px;
-  letter-spacing: 0.12em;
+  font-size: 13px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 13px 28px;
-  border-radius: 8px;
+  padding: 15px 32px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.22s ease;
   text-align: center;
   text-decoration: none;
+  line-height: 1.2;
 }
 @media (min-width: 768px) {
   .btn-secondary {
-    font-size: 13px;
-    padding: 14px 32px;
+    font-size: 14px;
+    padding: 17px 36px;
   }
 }
 .btn-secondary:hover {
@@ -171,7 +185,7 @@ body {
 .card {
   background: #ffffff;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
   transition: all 0.25s ease;
 }
@@ -184,16 +198,17 @@ body {
 /* ── Inputs ─────────────────────────────────────────────── */
 .input {
   width: 100%;
-  padding: 12px 14px;
+  padding: 14px 16px;
   background: #ffffff;
   border: 1.5px solid var(--border2);
   color: var(--text);
   font-family: "DM Sans", sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 400;
-  border-radius: 8px;
+  border-radius: 10px;
   transition: border-color 0.2s, box-shadow 0.2s;
   outline: none;
+  line-height: 1.4;
 }
 .input:focus {
   border-color: var(--purple);
@@ -207,14 +222,15 @@ body {
 .badge {
   display: inline-block;
   font-family: "DM Mono", monospace;
-  font-size: 9px;
-  letter-spacing: 0.14em;
+  font-size: 11px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border: 1px solid var(--border2);
   color: var(--text-muted);
   border-radius: 99px;
   background: var(--surface);
+  line-height: 1.4;
 }
 
 .badge-gold {
@@ -244,37 +260,51 @@ body {
 /* ── Eyebrow ────────────────────────────────────────────── */
 .eyebrow {
   font-family: "DM Mono", monospace;
-  font-size: 10px;
-  letter-spacing: 0.28em;
+  font-size: 12px;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
   color: var(--purple);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  font-weight: 500;
 }
 .eyebrow::before {
   content: "";
-  width: 24px;
+  width: 28px;
   height: 1.5px;
   background: var(--purple);
   border-radius: 99px;
 }
 @media (min-width: 768px) {
-  .eyebrow { font-size: 11px; }
-  .eyebrow::before { width: 36px; }
+  .eyebrow { font-size: 13px; }
+  .eyebrow::before { width: 40px; }
+}
+
+/* ── Meta label (small uppercase mono) ──────────────────── */
+.meta-label {
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+@media (min-width: 768px) {
+  .meta-label { font-size: 12px; }
 }
 
 /* ── Section ────────────────────────────────────────────── */
 .section {
-  padding: 56px 20px;
+  padding: 72px 24px;
   max-width: var(--max-w);
   margin: 0 auto;
 }
 @media (min-width: 768px) {
-  .section { padding: 80px 48px; }
+  .section { padding: 96px 48px; }
 }
 @media (min-width: 1024px) {
-  .section { padding: 100px 72px; }
+  .section { padding: 120px 72px; }
 }
 
 /* ── Divider ────────────────────────────────────────────── */

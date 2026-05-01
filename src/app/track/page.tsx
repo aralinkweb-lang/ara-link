@@ -79,15 +79,15 @@ function OrderTracker() {
   return (
     <div className="bg-white min-h-screen">
       <div className="section max-w-2xl">
-        <div className="eyebrow mb-4">Order Tracking</div>
-        <h1 className="font-serif text-3xl md:text-4xl font-light leading-tight text-[#0f0a1e] mb-6">
+        <div className="eyebrow mb-5">Order Tracking</div>
+        <h1 className="font-serif text-[36px] md:text-5xl font-light leading-[1.1] text-[#0f0a1e] mb-8">
           Track your<br />
           <em className="italic text-[#7c3aed]">order</em>
         </h1>
 
         {/* Search */}
-        <div className="mb-10">
-          <div className="flex gap-2">
+        <div className="mb-12">
+          <div className="flex gap-3">
             <input
               type="text"
               value={orderNumber}
@@ -96,11 +96,11 @@ function OrderTracker() {
               placeholder="Enter order number (e.g., ARA-XXXXX)"
               className="input flex-1"
             />
-            <button onClick={handleTrack} disabled={loading} className="btn-primary px-6">
+            <button onClick={handleTrack} disabled={loading} className="btn-primary px-7">
               {loading ? "..." : "Track"}
             </button>
           </div>
-          {error && <p className="text-xs text-[#dc2626] mt-2">{error}</p>}
+          {error && <p className="text-sm text-[#dc2626] mt-2.5">{error}</p>}
         </div>
 
         {/* Order Details */}
@@ -109,21 +109,21 @@ function OrderTracker() {
 
             {/* Confirmed banner */}
             {order.paymentStatus === "paid" && order.status === "confirmed" && (
-              <div className="bg-[#f5f3ff] border border-[rgba(124,58,237,0.2)] rounded-xl p-5 text-center">
-                <div className="text-4xl mb-3">🧊</div>
-                <h3 className="font-serif text-xl text-[#0f0a1e] mb-2">Order Confirmed!</h3>
-                <p className="text-sm text-[#6b7280]">
+              <div className="bg-[#f5f3ff] border border-[rgba(124,58,237,0.2)] rounded-xl p-7 text-center">
+                <div className="text-5xl mb-4">🧊</div>
+                <h3 className="font-serif text-2xl text-[#0f0a1e] mb-2.5">Order Confirmed!</h3>
+                <p className="text-base text-[#6b7280]">
                   Your ARA products are being prepared. You&apos;ll receive tracking updates soon.
                 </p>
               </div>
             )}
 
             {/* Order info card */}
-            <div className="card p-5">
-              <div className="flex justify-between items-start mb-3">
+            <div className="card p-7">
+              <div className="flex justify-between items-start mb-4">
                 <div>
-                  <p className="font-mono text-[10px] tracking-widest uppercase text-[#7c3aed] mb-1">Order Number</p>
-                  <p className="font-serif text-lg text-[#0f0a1e]">{order.orderNumber}</p>
+                  <p className="font-mono text-[12px] tracking-[0.18em] uppercase text-[#7c3aed] mb-1.5 font-medium">Order Number</p>
+                  <p className="font-serif text-xl text-[#0f0a1e]">{order.orderNumber}</p>
                 </div>
                 <span className={`badge ${
                   order.status === "delivered" ? "badge-purple" :
@@ -132,7 +132,7 @@ function OrderTracker() {
                   {order.status.toUpperCase()}
                 </span>
               </div>
-              <p className="text-xs text-[#9ca3af] mb-5">
+              <p className="text-sm text-[#9ca3af] mb-7">
                 Ordered on {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
               </p>
 
@@ -145,15 +145,15 @@ function OrderTracker() {
                     const isCurrent = i + 1 === currentStep;
                     return (
                       <div key={step} className="flex flex-col items-center flex-1">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 transition-all ${
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2.5 transition-all ${
                           isActive ? "bg-[#7c3aed] text-white" : "bg-[#f5f3ff] text-[#9ca3af] border border-[rgba(124,58,237,0.15)]"
                         } ${isCurrent ? "ring-2 ring-[#7c3aed] ring-offset-2" : ""}`}>
-                          {i === 0 && <CheckCircle size={14} />}
-                          {i === 1 && <Package size={14} />}
-                          {i === 2 && <Truck size={14} />}
-                          {i === 3 && <MapPin size={14} />}
+                          {i === 0 && <CheckCircle size={16} />}
+                          {i === 1 && <Package size={16} />}
+                          {i === 2 && <Truck size={16} />}
+                          {i === 3 && <MapPin size={16} />}
                         </div>
-                        <span className={`text-[8px] font-mono tracking-wider uppercase ${isActive ? "text-[#7c3aed] font-semibold" : "text-[#9ca3af]"}`}>
+                        <span className={`text-[11px] font-mono tracking-[0.1em] uppercase font-medium ${isActive ? "text-[#7c3aed]" : "text-[#9ca3af]"}`}>
                           {step}
                         </span>
                       </div>
@@ -161,7 +161,7 @@ function OrderTracker() {
                   })}
                 </div>
                 {/* Progress line */}
-                <div className="absolute top-4 left-8 right-8 h-0.5 bg-[rgba(124,58,237,0.1)]">
+                <div className="absolute top-5 left-10 right-10 h-0.5 bg-[rgba(124,58,237,0.1)]">
                   <div
                     className="h-full bg-[#7c3aed] transition-all"
                     style={{ width: `${((getStatusStep(order.status) - 1) / 3) * 100}%` }}
@@ -171,20 +171,20 @@ function OrderTracker() {
 
               {/* Courier info */}
               {order.awbCode && (
-                <div className="mt-5 bg-[#faf8ff] border border-[rgba(124,58,237,0.1)] rounded-lg p-4">
-                  <p className="font-mono text-[9px] tracking-widest uppercase text-[#9ca3af] mb-2">Shipment Details</p>
+                <div className="mt-7 bg-[#faf8ff] border border-[rgba(124,58,237,0.1)] rounded-lg p-5">
+                  <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#9ca3af] mb-2.5 font-medium">Shipment Details</p>
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-sm font-medium text-[#0f0a1e]">{order.courierName || "Delhivery"}</p>
-                      <p className="text-xs text-[#6b7280]">AWB: {order.awbCode}</p>
+                      <p className="text-base font-medium text-[#0f0a1e]">{order.courierName || "Delhivery"}</p>
+                      <p className="text-sm text-[#6b7280] mt-0.5">AWB: {order.awbCode}</p>
                     </div>
                     <a
                       href={`https://www.delhivery.com/track/package/${order.awbCode}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-[#7c3aed] flex items-center gap-1 hover:underline font-medium"
+                      className="text-sm text-[#7c3aed] flex items-center gap-1.5 hover:underline font-medium"
                     >
-                      Track on Delhivery <ArrowRight size={12} />
+                      Track on Delhivery <ArrowRight size={14} />
                     </a>
                   </div>
                 </div>
@@ -193,21 +193,21 @@ function OrderTracker() {
 
             {/* Tracking history */}
             {order.tracking && order.tracking.length > 0 && (
-              <div className="card p-5">
-                <p className="font-mono text-[10px] tracking-widest uppercase text-[#7c3aed] mb-4">Tracking History</p>
-                <div className="space-y-4">
+              <div className="card p-7">
+                <p className="font-mono text-[12px] tracking-[0.18em] uppercase text-[#7c3aed] mb-5 font-semibold">Tracking History</p>
+                <div className="space-y-5">
                   {order.tracking.map((activity, i) => (
                     <div key={i} className="flex gap-4">
                       <div className="relative flex flex-col items-center">
-                        <div className={`w-3 h-3 rounded-full shrink-0 ${i === 0 ? "bg-[#7c3aed]" : "bg-[#e5e7eb]"}`} />
+                        <div className={`w-3.5 h-3.5 rounded-full shrink-0 ${i === 0 ? "bg-[#7c3aed]" : "bg-[#e5e7eb]"}`} />
                         {i < order.tracking!.length - 1 && (
                           <div className="w-px flex-1 bg-[rgba(124,58,237,0.1)] mt-1" />
                         )}
                       </div>
-                      <div className="flex-1 pb-4">
-                        <p className="text-sm font-medium text-[#0f0a1e]">{activity.status}</p>
-                        <p className="text-xs text-[#6b7280] mt-0.5">{activity.activity}</p>
-                        <div className="flex items-center gap-2 mt-1 text-[10px] text-[#9ca3af]">
+                      <div className="flex-1 pb-5">
+                        <p className="text-base font-medium text-[#0f0a1e]">{activity.status}</p>
+                        <p className="text-sm text-[#6b7280] mt-1">{activity.activity}</p>
+                        <div className="flex items-center gap-2 mt-1.5 text-xs text-[#9ca3af]">
                           <span>{activity.date}</span>
                           {activity.location && <><span>·</span><span>{activity.location}</span></>}
                         </div>
@@ -219,47 +219,47 @@ function OrderTracker() {
             )}
 
             {/* Order items */}
-            <div className="card p-5">
-              <p className="font-mono text-[10px] tracking-widest uppercase text-[#7c3aed] mb-4">Order Items</p>
+            <div className="card p-7">
+              <p className="font-mono text-[12px] tracking-[0.18em] uppercase text-[#7c3aed] mb-5 font-semibold">Order Items</p>
               <div className="space-y-3">
                 {order.items.map((item, i) => (
-                  <div key={i} className={`flex justify-between items-center py-2 ${i < order.items.length - 1 ? "border-b border-[rgba(124,58,237,0.08)]" : ""}`}>
+                  <div key={i} className={`flex justify-between items-center py-3 ${i < order.items.length - 1 ? "border-b border-[rgba(124,58,237,0.08)]" : ""}`}>
                     <div>
-                      <p className="text-sm font-medium text-[#0f0a1e]">{item.productName}</p>
-                      <p className="text-xs text-[#6b7280]">Qty: {item.quantity}</p>
+                      <p className="text-base font-medium text-[#0f0a1e]">{item.productName}</p>
+                      <p className="text-sm text-[#6b7280]">Qty: {item.quantity}</p>
                     </div>
-                    <span className="font-semibold text-[#0f0a1e]">₹{item.price.toLocaleString("en-IN")}</span>
+                    <span className="font-semibold text-[#0f0a1e] text-base">₹{item.price.toLocaleString("en-IN")}</span>
                   </div>
                 ))}
               </div>
-              <div className="mt-4 pt-4 border-t border-[rgba(124,58,237,0.08)] flex justify-between items-center">
-                <span className="text-[#6b7280]">Total</span>
-                <span className="font-serif text-xl font-light text-[#7c3aed]">₹{order.total.toLocaleString("en-IN")}</span>
+              <div className="mt-5 pt-5 border-t border-[rgba(124,58,237,0.08)] flex justify-between items-center">
+                <span className="text-base text-[#6b7280]">Total</span>
+                <span className="font-serif text-2xl font-light text-[#7c3aed]">₹{order.total.toLocaleString("en-IN")}</span>
               </div>
             </div>
 
             {/* Shipping address */}
-            <div className="card p-5">
-              <p className="font-mono text-[10px] tracking-widest uppercase text-[#7c3aed] mb-4">Delivery Address</p>
-              <div className="space-y-2 text-sm">
+            <div className="card p-7">
+              <p className="font-mono text-[12px] tracking-[0.18em] uppercase text-[#7c3aed] mb-5 font-semibold">Delivery Address</p>
+              <div className="space-y-2.5 text-base">
                 <p className="font-medium text-[#0f0a1e]">{order.shippingAddress.fullName}</p>
-                <p className="text-[#6b7280]">
+                <p className="text-[#6b7280] leading-relaxed">
                   {order.shippingAddress.address}<br />
                   {order.shippingAddress.city}, {order.shippingAddress.state} – {order.shippingAddress.pincode}
                 </p>
-                <div className="flex items-center gap-2 text-[#6b7280] pt-1">
-                  <Phone size={12} className="shrink-0" /><span>{order.shippingAddress.phone}</span>
+                <div className="flex items-center gap-2.5 text-[#6b7280] pt-1.5">
+                  <Phone size={14} className="shrink-0" /><span>{order.shippingAddress.phone}</span>
                 </div>
-                <div className="flex items-center gap-2 text-[#6b7280]">
-                  <Mail size={12} className="shrink-0" /><span>{order.shippingAddress.email}</span>
+                <div className="flex items-center gap-2.5 text-[#6b7280]">
+                  <Mail size={14} className="shrink-0" /><span>{order.shippingAddress.email}</span>
                 </div>
               </div>
             </div>
 
             {/* Help */}
-            <div className="text-center py-4">
-              <p className="text-sm text-[#6b7280] mb-2">Need help with your order?</p>
-              <a href="mailto:support@ara-skincare.com" className="text-[#7c3aed] text-sm font-medium hover:underline">
+            <div className="text-center py-6">
+              <p className="text-base text-[#6b7280] mb-2.5">Need help with your order?</p>
+              <a href="mailto:support@ara-skincare.com" className="text-[#7c3aed] text-base font-medium hover:underline">
                 Contact Support
               </a>
             </div>
@@ -268,9 +268,9 @@ function OrderTracker() {
 
         {/* Empty state */}
         {!order && !loading && !orderParam && (
-          <div className="text-center py-16">
-            <div className="text-5xl mb-4">📦</div>
-            <p className="text-[#6b7280] mb-6">Enter your order number above to track your shipment</p>
+          <div className="text-center py-20">
+            <div className="text-6xl mb-5">📦</div>
+            <p className="text-base text-[#6b7280] mb-7">Enter your order number above to track your shipment</p>
             <Link href="/products" className="btn-secondary inline-block">
               Continue Shopping
             </Link>

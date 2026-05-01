@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Lock, Truck, Shield, RotateCcw, X, Plus, Minus } from "lucide-react";
-import { useCart } from "@/store/cart";
+import { ArrowLeft, Lock, Truck, Shield, RotateCcw, X, Plus, Minus, Tag } from "lucide-react";
+import { useCart, getItemKey } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
 import { indianStates, addOns } from "@/data/products";
+import { applyCoupon, type Coupon } from "@/lib/coupons";
 
 declare global {
   interface Window {
@@ -36,6 +37,9 @@ export default function CheckoutPage() {
 
   const [loading, setLoading] = useState(false);
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [couponError, setCouponError] = useState<string>("");
   const [formData, setFormData] = useState({
     fullName: "", phone: "", email: "",
     address: "", city: "", state: "", pincode: "",
@@ -47,7 +51,28 @@ export default function CheckoutPage() {
     const addon = addOns.find((a) => a.id === id);
     return sum + (addon?.price || 0);
   }, 0);
-  const total = subtotal + addOnsTotal;
+  const preDiscountTotal = subtotal + addOnsTotal;
+  const couponDiscount = appliedCoupon
+    ? applyCoupon(appliedCoupon.code, preDiscountTotal).discount
+    : 0;
+  const total = Math.max(0, preDiscountTotal - couponDiscount);
+
+  const handleApplyCoupon = () => {
+    const result = applyCoupon(couponInput, preDiscountTotal);
+    if (!result.valid || !result.coupon) {
+      setAppliedCoupon(null);
+      setCouponError(result.error || "Invalid coupon");
+      return;
+    }
+    setAppliedCoupon(result.coupon);
+    setCouponError("");
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput("");
+    setCouponError("");
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -141,9 +166,9 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="bg-white min-h-screen flex flex-col items-center justify-center p-8 text-center">
-        <div className="text-6xl md:text-8xl mb-6">🧊</div>
-        <h1 className="font-serif text-2xl md:text-3xl text-[#0f0a1e] mb-3">Your cart is empty</h1>
-        <p className="text-sm md:text-base text-[#6b7280] mb-6">Add some products to get started</p>
+        <div className="text-7xl md:text-9xl mb-7">🧊</div>
+        <h1 className="font-serif text-3xl md:text-4xl text-[#0f0a1e] mb-4">Your cart is empty</h1>
+        <p className="text-base md:text-lg text-[#6b7280] mb-8">Add some products to get started</p>
         <Link href="/products" className="btn-primary">Shop Now</Link>
       </div>
     );
@@ -153,94 +178,94 @@ export default function CheckoutPage() {
     `input${errors[field] ? " !border-[#dc2626]" : ""}`;
 
   const trustItems = [
-    { icon: <Truck size={16} />,     label: "Free Shipping" },
-    { icon: <RotateCcw size={16} />, label: "30-Day Returns" },
-    { icon: <Shield size={16} />,    label: "Secure Pay" },
+    { icon: <Truck size={18} />,     label: "Free Shipping" },
+    { icon: <RotateCcw size={18} />, label: "30-Day Returns" },
+    { icon: <Shield size={18} />,    label: "Secure Pay" },
   ];
 
   return (
     <div className="bg-[#faf8ff] min-h-screen">
       {/* Top bar */}
-      <div className="sticky top-0 z-20 bg-white border-b border-[rgba(124,58,237,0.1)] shadow-[0_1px_8px_rgba(124,58,237,0.06)] px-5 md:px-10 lg:px-16 py-4">
+      <div className="sticky top-0 z-20 bg-white border-b border-[rgba(124,58,237,0.1)] shadow-[0_1px_8px_rgba(124,58,237,0.06)] px-5 md:px-10 lg:px-16 py-5">
         <div className="flex items-center gap-4 max-w-[1400px] mx-auto">
           <Link href="/products" className="text-[#9ca3af] hover:text-[#7c3aed] transition-colors">
-            <ArrowLeft size={20} />
+            <ArrowLeft size={22} />
           </Link>
-          <h1 className="font-serif text-lg md:text-xl text-[#0f0a1e]">Checkout</h1>
+          <h1 className="font-serif text-xl md:text-2xl text-[#0f0a1e]">Checkout</h1>
         </div>
       </div>
 
-      <div className="max-w-[1400px] mx-auto px-5 py-8 md:px-10 md:py-12 lg:px-16 lg:py-14">
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+      <div className="max-w-[1400px] mx-auto px-5 py-10 md:px-10 md:py-14 lg:px-16 lg:py-16">
+        <div className="flex flex-col lg:flex-row gap-10 lg:gap-14">
 
           {/* ── Left — Form ─────────────────────────────────────── */}
           <div className="flex-1 lg:max-w-xl order-2 lg:order-1">
-            <div className="bg-white border border-[rgba(124,58,237,0.1)] rounded-2xl p-6 md:p-8 shadow-[0_2px_16px_rgba(124,58,237,0.06)]">
-              <h2 className="font-mono text-[11px] tracking-widest uppercase text-[#7c3aed] mb-5">
+            <div className="bg-white border border-[rgba(124,58,237,0.1)] rounded-2xl p-7 md:p-9 shadow-[0_2px_16px_rgba(124,58,237,0.06)]">
+              <h2 className="font-mono text-[13px] tracking-[0.18em] uppercase text-[#7c3aed] mb-6 font-semibold">
                 Delivery Details
               </h2>
 
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <label className="block font-mono text-[9px] tracking-widest uppercase text-[#6b7280] mb-1.5">Full Name *</label>
+                  <label className="block font-mono text-[11px] tracking-[0.16em] uppercase text-[#6b7280] mb-2 font-medium">Full Name *</label>
                   <input type="text" name="fullName" value={formData.fullName} onChange={handleChange}
                     className={inputClass("fullName")} placeholder="Your full name" />
-                  {errors.fullName && <p className="text-xs text-[#dc2626] mt-1">{errors.fullName}</p>}
+                  {errors.fullName && <p className="text-sm text-[#dc2626] mt-1.5">{errors.fullName}</p>}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-5">
                   <div>
-                    <label className="block font-mono text-[9px] tracking-widest uppercase text-[#6b7280] mb-1.5">Phone *</label>
+                    <label className="block font-mono text-[11px] tracking-[0.16em] uppercase text-[#6b7280] mb-2 font-medium">Phone *</label>
                     <input type="tel" name="phone" value={formData.phone} onChange={handleChange}
                       className={inputClass("phone")} placeholder="10-digit mobile" />
-                    {errors.phone && <p className="text-xs text-[#dc2626] mt-1">{errors.phone}</p>}
+                    {errors.phone && <p className="text-sm text-[#dc2626] mt-1.5">{errors.phone}</p>}
                   </div>
                   <div>
-                    <label className="block font-mono text-[9px] tracking-widest uppercase text-[#6b7280] mb-1.5">Email *</label>
+                    <label className="block font-mono text-[11px] tracking-[0.16em] uppercase text-[#6b7280] mb-2 font-medium">Email *</label>
                     <input type="email" name="email" value={formData.email} onChange={handleChange}
                       className={inputClass("email")} placeholder="your@email.com" />
-                    {errors.email && <p className="text-xs text-[#dc2626] mt-1">{errors.email}</p>}
+                    {errors.email && <p className="text-sm text-[#dc2626] mt-1.5">{errors.email}</p>}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-mono text-[9px] tracking-widest uppercase text-[#6b7280] mb-1.5">Address *</label>
+                  <label className="block font-mono text-[11px] tracking-[0.16em] uppercase text-[#6b7280] mb-2 font-medium">Address *</label>
                   <input type="text" name="address" value={formData.address} onChange={handleChange}
                     className={inputClass("address")} placeholder="House/Flat, Street, Area" />
-                  {errors.address && <p className="text-xs text-[#dc2626] mt-1">{errors.address}</p>}
+                  {errors.address && <p className="text-sm text-[#dc2626] mt-1.5">{errors.address}</p>}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-5">
                   <div>
-                    <label className="block font-mono text-[9px] tracking-widest uppercase text-[#6b7280] mb-1.5">City *</label>
+                    <label className="block font-mono text-[11px] tracking-[0.16em] uppercase text-[#6b7280] mb-2 font-medium">City *</label>
                     <input type="text" name="city" value={formData.city} onChange={handleChange}
                       className={inputClass("city")} placeholder="City" />
-                    {errors.city && <p className="text-xs text-[#dc2626] mt-1">{errors.city}</p>}
+                    {errors.city && <p className="text-sm text-[#dc2626] mt-1.5">{errors.city}</p>}
                   </div>
                   <div>
-                    <label className="block font-mono text-[9px] tracking-widest uppercase text-[#6b7280] mb-1.5">PIN Code *</label>
+                    <label className="block font-mono text-[11px] tracking-[0.16em] uppercase text-[#6b7280] mb-2 font-medium">PIN Code *</label>
                     <input type="text" name="pincode" value={formData.pincode} onChange={handleChange}
                       className={inputClass("pincode")} placeholder="6-digit PIN" />
-                    {errors.pincode && <p className="text-xs text-[#dc2626] mt-1">{errors.pincode}</p>}
+                    {errors.pincode && <p className="text-sm text-[#dc2626] mt-1.5">{errors.pincode}</p>}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-mono text-[9px] tracking-widest uppercase text-[#6b7280] mb-1.5">State *</label>
+                  <label className="block font-mono text-[11px] tracking-[0.16em] uppercase text-[#6b7280] mb-2 font-medium">State *</label>
                   <select name="state" value={formData.state} onChange={handleChange} className={inputClass("state")}>
                     <option value="">Select State</option>
                     {indianStates.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
-                  {errors.state && <p className="text-xs text-[#dc2626] mt-1">{errors.state}</p>}
+                  {errors.state && <p className="text-sm text-[#dc2626] mt-1.5">{errors.state}</p>}
                 </div>
               </div>
 
               {/* Trust row */}
-              <div className="grid grid-cols-3 divide-x divide-[rgba(124,58,237,0.1)] border border-[rgba(124,58,237,0.1)] rounded-xl overflow-hidden mt-6">
+              <div className="grid grid-cols-3 divide-x divide-[rgba(124,58,237,0.1)] border border-[rgba(124,58,237,0.1)] rounded-xl overflow-hidden mt-8">
                 {trustItems.map(({ icon, label }) => (
-                  <div key={label} className="bg-[#faf8ff] py-3 px-2 text-center">
-                    <div className="flex justify-center mb-1 text-[#7c3aed]">{icon}</div>
-                    <p className="font-mono text-[8px] tracking-wide uppercase text-[#6b7280]">{label}</p>
+                  <div key={label} className="bg-[#faf8ff] py-4 px-2 text-center">
+                    <div className="flex justify-center mb-1.5 text-[#7c3aed]">{icon}</div>
+                    <p className="font-mono text-[11px] tracking-[0.1em] uppercase text-[#6b7280] font-medium">{label}</p>
                   </div>
                 ))}
               </div>
@@ -248,43 +273,43 @@ export default function CheckoutPage() {
           </div>
 
           {/* ── Right — Order Summary ─────────────────────────── */}
-          <div className="lg:w-[400px] xl:w-[440px] order-1 lg:order-2">
-            <div className="lg:sticky lg:top-24 bg-white border border-[rgba(124,58,237,0.1)] rounded-2xl p-6 shadow-[0_2px_16px_rgba(124,58,237,0.06)]">
-              <h2 className="font-mono text-[11px] tracking-widest uppercase text-[#7c3aed] mb-4">
+          <div className="lg:w-[420px] xl:w-[460px] order-1 lg:order-2">
+            <div className="lg:sticky lg:top-28 bg-white border border-[rgba(124,58,237,0.1)] rounded-2xl p-7 shadow-[0_2px_16px_rgba(124,58,237,0.06)]">
+              <h2 className="font-mono text-[13px] tracking-[0.18em] uppercase text-[#7c3aed] mb-5 font-semibold">
                 Order Summary
               </h2>
 
               {/* Cart items */}
-              <div className="space-y-3 mb-5">
+              <div className="space-y-3.5 mb-6">
                 {items.map((item) => (
-                  <div key={item.product.id} className="flex gap-3 p-3 bg-[#faf8ff] border border-[rgba(124,58,237,0.08)] rounded-xl">
-                    <div className="w-14 h-14 bg-[#f5f3ff] rounded-lg flex items-center justify-center text-xl shrink-0">
+                  <div key={getItemKey(item)} className="flex gap-3.5 p-4 bg-[#faf8ff] border border-[rgba(124,58,237,0.08)] rounded-xl">
+                    <div className="w-16 h-16 bg-[#f5f3ff] rounded-lg flex items-center justify-center text-2xl shrink-0">
                       🧊
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-[#0f0a1e] truncate">{item.product.name}</p>
-                          {item.variant && <p className="text-xs text-[#6b7280]">{item.variant.name}</p>}
+                          <p className="text-[15px] font-medium text-[#0f0a1e] truncate">{item.product.name}</p>
+                          {item.variant && <p className="text-sm text-[#6b7280] mt-0.5">{item.variant.name}</p>}
                         </div>
-                        <button onClick={() => removeItem(item.product.id)}
-                          className="text-[#9ca3af] hover:text-[#dc2626] p-1 rounded transition-colors shrink-0">
-                          <X size={14} />
+                        <button onClick={() => removeItem(item.product.id, item.variant?.id)}
+                          className="text-[#9ca3af] hover:text-[#dc2626] p-1.5 rounded transition-colors shrink-0">
+                          <X size={16} />
                         </button>
                       </div>
-                      <div className="flex justify-between items-center mt-2">
+                      <div className="flex justify-between items-center mt-2.5">
                         <div className="flex items-center border border-[rgba(124,58,237,0.2)] rounded-lg overflow-hidden">
-                          <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                            className="w-7 h-7 flex items-center justify-center text-[#6b7280] hover:bg-[#f5f3ff] hover:text-[#7c3aed] transition-colors">
-                            <Minus size={10} />
+                          <button onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.variant?.id)}
+                            className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f5f3ff] hover:text-[#7c3aed] transition-colors">
+                            <Minus size={12} />
                           </button>
-                          <span className="w-7 text-center text-xs font-mono font-medium text-[#0f0a1e]">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                            className="w-7 h-7 flex items-center justify-center text-[#6b7280] hover:bg-[#f5f3ff] hover:text-[#7c3aed] transition-colors">
-                            <Plus size={10} />
+                          <span className="w-8 text-center text-sm font-mono font-medium text-[#0f0a1e]">{item.quantity}</span>
+                          <button onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.variant?.id)}
+                            className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f5f3ff] hover:text-[#7c3aed] transition-colors">
+                            <Plus size={12} />
                           </button>
                         </div>
-                        <span className="font-semibold text-[#0f0a1e]">{formatPrice(item.product.price * item.quantity)}</span>
+                        <span className="font-semibold text-[#0f0a1e] text-base">{formatPrice(item.product.price * item.quantity)}</span>
                       </div>
                     </div>
                   </div>
@@ -292,14 +317,14 @@ export default function CheckoutPage() {
               </div>
 
               {/* Add-ons */}
-              <div className="mb-5">
-                <h3 className="font-mono text-[9px] tracking-widest uppercase text-[#9ca3af] mb-3">Add to Your Order</h3>
-                <div className="space-y-2">
+              <div className="mb-6">
+                <h3 className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#9ca3af] mb-3 font-medium">Add to Your Order</h3>
+                <div className="space-y-2.5">
                   {addOns.slice(0, 2).map((addon) => {
                     const isSelected = selectedAddOns.includes(addon.id);
                     return (
                       <div key={addon.id} onClick={() => toggleAddOn(addon.id)}
-                        className={`flex items-center gap-3 p-3 border rounded-xl cursor-pointer transition-all ${
+                        className={`flex items-center gap-3 p-3.5 border rounded-xl cursor-pointer transition-all ${
                           isSelected
                             ? "bg-[#faf8ff] border-[#7c3aed] shadow-[0_0_0_2px_rgba(124,58,237,0.08)]"
                             : "bg-white border-[rgba(124,58,237,0.12)] hover:border-[rgba(124,58,237,0.28)]"
@@ -310,8 +335,8 @@ export default function CheckoutPage() {
                           {isSelected && "✓"}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[#0f0a1e] truncate">{addon.name}</p>
-                          <p className="text-xs text-[#6b7280]">
+                          <p className="text-[14px] font-medium text-[#0f0a1e] truncate">{addon.name}</p>
+                          <p className="text-sm text-[#6b7280]">
                             {formatPrice(addon.price)}{" "}
                             <span className="line-through text-[#9ca3af]">{formatPrice(addon.originalPrice)}</span>
                           </p>
@@ -322,38 +347,91 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <div className="h-px bg-[rgba(124,58,237,0.08)] my-4" />
+              <div className="h-px bg-[rgba(124,58,237,0.08)] my-5" />
+
+              {/* Coupon */}
+              <div className="mb-6">
+                <h3 className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#9ca3af] mb-2.5 flex items-center gap-1.5 font-medium">
+                  <Tag size={13} /> Coupon Code
+                </h3>
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between p-3.5 bg-[#f0fdf4] border border-[#86efac] rounded-xl">
+                    <div className="min-w-0">
+                      <p className="text-[15px] font-semibold text-[#15803d]">{appliedCoupon.code}</p>
+                      {appliedCoupon.description && (
+                        <p className="text-sm text-[#15803d]/80 truncate">{appliedCoupon.description}</p>
+                      )}
+                    </div>
+                    <button
+                      onClick={handleRemoveCoupon}
+                      className="text-sm text-[#15803d] hover:text-[#dc2626] font-medium transition-colors shrink-0 ml-2"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex gap-2.5">
+                      <input
+                        type="text"
+                        value={couponInput}
+                        onChange={(e) => { setCouponInput(e.target.value); setCouponError(""); }}
+                        placeholder="Enter coupon"
+                        className="input flex-1 uppercase tracking-wider"
+                      />
+                      <button
+                        onClick={handleApplyCoupon}
+                        type="button"
+                        className="btn-secondary px-5 whitespace-nowrap"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                    {couponError && (
+                      <p className="text-sm text-[#dc2626] mt-2">{couponError}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="h-px bg-[rgba(124,58,237,0.08)] my-5" />
 
               {/* Totals */}
-              <div className="space-y-2 mb-5">
-                <div className="flex justify-between text-sm">
+              <div className="space-y-2.5 mb-6">
+                <div className="flex justify-between text-[15px]">
                   <span className="text-[#6b7280]">Subtotal</span>
                   <span className="font-medium text-[#0f0a1e]">{formatPrice(subtotal)}</span>
                 </div>
                 {addOnsTotal > 0 && (
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-[15px]">
                     <span className="text-[#6b7280]">Add-ons</span>
                     <span className="font-medium text-[#0f0a1e]">{formatPrice(addOnsTotal)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm">
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between text-[15px]">
+                    <span className="text-[#15803d]">Discount ({appliedCoupon?.code})</span>
+                    <span className="text-[#15803d] font-medium">−{formatPrice(couponDiscount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-[15px]">
                   <span className="text-[#6b7280]">Shipping</span>
                   <span className="text-[#7c3aed] font-semibold">FREE</span>
                 </div>
-                <div className="h-px bg-[rgba(124,58,237,0.08)]" />
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold text-[#0f0a1e]">Total</span>
-                  <span className="font-serif text-2xl font-light text-[#0f0a1e]">{formatPrice(total)}</span>
+                <div className="h-px bg-[rgba(124,58,237,0.08)] my-1" />
+                <div className="flex justify-between items-center pt-1">
+                  <span className="font-semibold text-[#0f0a1e] text-base">Total</span>
+                  <span className="font-serif text-3xl font-light text-[#0f0a1e]">{formatPrice(total)}</span>
                 </div>
               </div>
 
               {/* Pay button */}
               <button onClick={handlePayment} disabled={loading}
                 className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50">
-                <Lock size={14} />
+                <Lock size={16} />
                 {loading ? "Processing..." : `Pay Securely — ${formatPrice(total)}`}
               </button>
-              <p className="text-center text-xs text-[#9ca3af] mt-3 leading-relaxed">
+              <p className="text-center text-sm text-[#9ca3af] mt-3.5 leading-relaxed">
                 Secured by Razorpay · 30-day returns · Your data is safe
               </p>
             </div>

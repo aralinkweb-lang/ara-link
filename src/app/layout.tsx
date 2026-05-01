@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/store/cart";
 import AnnouncementBar from "@/components/AnnouncementBar";
+import ExitIntentPopup from "@/components/ExitIntentPopup";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -44,6 +45,7 @@ export default function RootLayout({
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
+          <ExitIntentPopup />
         </CartProvider>
       </body>
     </html>

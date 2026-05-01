@@ -134,15 +134,15 @@ export function StockBar({ stock, total = 100 }: { stock: number; total?: number
   const percentage = (stock / total) * 100;
 
   return (
-    <div className="py-4 px-5 bg-white border-b border-[rgba(124,58,237,0.08)]">
+    <div className="py-5 px-5 md:px-10 lg:px-16 bg-white border-b border-[rgba(124,58,237,0.08)]">
       <div className="max-w-[1400px] mx-auto">
-        <div className="flex justify-between text-xs text-[#6b7280] mb-2">
-          <span>Stock remaining</span>
-          <span className="text-[#dc2626] font-medium">{stock} / {total} units left</span>
+        <div className="flex justify-between text-sm text-[#6b7280] mb-2.5">
+          <span className="font-medium">Stock remaining</span>
+          <span className="text-[#dc2626] font-semibold">{stock} / {total} units left</span>
         </div>
-        <div className="h-1.5 bg-[#f3f0ff] rounded-full">
+        <div className="h-2 bg-[#f3f0ff] rounded-full">
           <div
-            className="h-1.5 bg-linear-to-r from-[#dc2626] to-[#f87171] rounded-full transition-all"
+            className="h-2 bg-linear-to-r from-[#dc2626] to-[#f87171] rounded-full transition-all"
             style={{ width: `${percentage}%` }}
           />
         </div>

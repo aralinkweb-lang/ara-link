@@ -1,7 +1,17 @@
 "use client";
 
-import React, { createContext, useContext, useReducer, ReactNode } from "react";
+import React, { createContext, useContext, useReducer, useEffect, useRef, ReactNode } from "react";
 import type { Product, ProductVariant, CartItem } from "@/types";
+
+const STORAGE_KEY = "ara-cart-v1";
+
+export function getCartItemKey(productId: string, variantId?: string): string {
+  return `${productId}__${variantId ?? "default"}`;
+}
+
+export function getItemKey(item: CartItem): string {
+  return getCartItemKey(item.product.id, item.variant?.id);
+}
 
 interface CartState {
   items: CartItem[];
@@ -10,18 +20,19 @@ interface CartState {
 
 type CartAction =
   | { type: "ADD_ITEM"; payload: { product: Product; quantity: number; variant?: ProductVariant } }
-  | { type: "REMOVE_ITEM"; payload: string }
-  | { type: "UPDATE_QUANTITY"; payload: { productId: string; quantity: number } }
+  | { type: "REMOVE_ITEM"; payload: { productId: string; variantId?: string } }
+  | { type: "UPDATE_QUANTITY"; payload: { productId: string; variantId?: string; quantity: number } }
   | { type: "CLEAR_CART" }
   | { type: "TOGGLE_CART" }
   | { type: "OPEN_CART" }
-  | { type: "CLOSE_CART" };
+  | { type: "CLOSE_CART" }
+  | { type: "HYDRATE"; payload: CartItem[] };
 
 interface CartContextType {
   state: CartState;
   addItem: (product: Product, quantity?: number, variant?: ProductVariant) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  removeItem: (productId: string, variantId?: string) => void;
+  updateQuantity: (productId: string, quantity: number, variantId?: string) => void;
   clearCart: () => void;
   toggleCart: () => void;
   openCart: () => void;
@@ -33,14 +44,16 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+function sameLine(item: CartItem, productId: string, variantId?: string) {
+  return item.product.id === productId && (item.variant?.id ?? undefined) === (variantId ?? undefined);
+}
+
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case "ADD_ITEM": {
       const { product, quantity, variant } = action.payload;
-      const existingIndex = state.items.findIndex(
-        (item) =>
-          item.product.id === product.id &&
-          item.variant?.id === variant?.id
+      const existingIndex = state.items.findIndex((item) =>
+        sameLine(item, product.id, variant?.id)
       );
 
       if (existingIndex > -1) {
@@ -60,24 +73,25 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     }
 
     case "REMOVE_ITEM": {
+      const { productId, variantId } = action.payload;
       return {
         ...state,
-        items: state.items.filter((item) => item.product.id !== action.payload),
+        items: state.items.filter((item) => !sameLine(item, productId, variantId)),
       };
     }
 
     case "UPDATE_QUANTITY": {
-      const { productId, quantity } = action.payload;
+      const { productId, variantId, quantity } = action.payload;
       if (quantity <= 0) {
         return {
           ...state,
-          items: state.items.filter((item) => item.product.id !== productId),
+          items: state.items.filter((item) => !sameLine(item, productId, variantId)),
         };
       }
       return {
         ...state,
         items: state.items.map((item) =>
-          item.product.id === productId ? { ...item, quantity } : item
+          sameLine(item, productId, variantId) ? { ...item, quantity } : item
         ),
       };
     }
@@ -94,6 +108,9 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     case "CLOSE_CART":
       return { ...state, isOpen: false };
 
+    case "HYDRATE":
+      return { ...state, items: action.payload };
+
     default:
       return state;
   }
@@ -104,17 +121,45 @@ export function CartProvider({ children }: { children: ReactNode }) {
     items: [],
     isOpen: false,
   });
+  const hydratedRef = useRef(false);
+
+  // Hydrate from localStorage on mount
+  useEffect(() => {
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          dispatch({ type: "HYDRATE", payload: parsed });
+        }
+      }
+    } catch {
+      // ignore corrupt storage
+    } finally {
+      hydratedRef.current = true;
+    }
+  }, []);
+
+  // Persist on every items change (after hydration)
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
+    } catch {
+      // ignore quota errors
+    }
+  }, [state.items]);
 
   const addItem = (product: Product, quantity = 1, variant?: ProductVariant) => {
     dispatch({ type: "ADD_ITEM", payload: { product, quantity, variant } });
   };
 
-  const removeItem = (productId: string) => {
-    dispatch({ type: "REMOVE_ITEM", payload: productId });
+  const removeItem = (productId: string, variantId?: string) => {
+    dispatch({ type: "REMOVE_ITEM", payload: { productId, variantId } });
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
-    dispatch({ type: "UPDATE_QUANTITY", payload: { productId, quantity } });
+  const updateQuantity = (productId: string, quantity: number, variantId?: string) => {
+    dispatch({ type: "UPDATE_QUANTITY", payload: { productId, variantId, quantity } });
   };
 
   const clearCart = () => {
@@ -142,7 +187,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const getTotal = () => {
     const subtotal = getSubtotal();
-    // Free shipping on all orders
     return subtotal;
   };
 
