@@ -35,21 +35,7 @@ export default function ProductView({ product }: ProductViewProps) {
           </div>
         </div>
 
-        {/* Thumbnail strip */}
-        <div className="flex gap-2 p-3 bg-[#faf8ff] overflow-x-auto border-t border-[rgba(124,58,237,0.08)]">
-          {["🧊", "💧", "❄️", "✨", "📦"].map((emoji, i) => (
-            <div
-              key={i}
-              className={`w-16 h-16 flex-shrink-0 border rounded-lg bg-white flex items-center justify-center cursor-pointer text-lg transition-all ${
-                i === 0
-                  ? "border-[#7c3aed] shadow-[0_0_0_2px_rgba(124,58,237,0.15)]"
-                  : "border-[rgba(124,58,237,0.12)] hover:border-[#7c3aed]"
-              }`}
-            >
-              {emoji}
-            </div>
-          ))}
-        </div>
+        
       </div>
 
       {/* Product Info */}
@@ -95,7 +81,7 @@ export default function ProductView({ product }: ProductViewProps) {
         <div className="h-px bg-[rgba(124,58,237,0.08)] my-6" />
 
         {/* Variants */}
-        {product.variants && product.variants.length > 0 && (
+        {/* {product.variants && product.variants.length > 0 && (
           <>
             <p className="font-mono text-[12px] tracking-[0.22em] uppercase text-[#6b7280] mb-4 font-medium">
               Colour
@@ -116,7 +102,7 @@ export default function ProductView({ product }: ProductViewProps) {
               ))}
             </div>
           </>
-        )}
+        )} */}
 
         {/* Quantity */}
         <p className="font-mono text-[12px] tracking-[0.22em] uppercase text-[#6b7280] mb-4 font-medium">
@@ -151,22 +137,19 @@ export default function ProductView({ product }: ProductViewProps) {
         <p className="text-sm text-[#9ca3af] mb-7">Inclusive of all taxes · Free shipping</p>
 
         {/* CTAs */}
-        <div className="flex flex-col gap-3 mb-7">
-          <button onClick={handleAddToCart} className="btn-primary w-full">
-            Add to Cart — Order Now
+        <div className="flex flex-col gap-3 mb-7 items-center">
+          <button onClick={handleAddToCart} className="btn-primary w-70 mb-2 ">
+            Order Now
           </button>
-          <button className="btn-secondary w-full flex items-center justify-center gap-2">
-            <Heart size={16} />
-            Save to Wishlist
-          </button>
-        </div>
+          
+        </div><br />
 
         {/* Shipping banner */}
         <div className="flex items-center justify-center gap-2 bg-[#f5f3ff] border border-[rgba(124,58,237,0.15)] rounded-lg py-4 px-5 font-mono text-[12px] tracking-[0.14em] uppercase text-[#7c3aed] mb-6 font-medium">
           <Truck size={16} />
           Free shipping across India · Arrives in 3–5 days
         </div>
-
+<br />
         {/* Guarantees */}
         <div className="grid grid-cols-3 divide-x divide-[rgba(124,58,237,0.1)] border border-[rgba(124,58,237,0.1)] rounded-xl overflow-hidden">
           {[

@@ -77,9 +77,9 @@ function OrderTracker() {
   };
 
   return (
-    <div className="bg-white min-h-screen">
-      <div className="section max-w-2xl">
-        <div className="eyebrow mb-5">Order Tracking</div>
+   <div className="bg-[#faf8ff] min-h-screen flex justify-center">
+    <div className="px-5 py-16 md:px-12 md:py-24 lg:px-16 lg:py-[90px]  mx-auto">
+        <div className="font-mono text-[12px] md:text-[13px] tracking-[0.26em] uppercase text-[#7c3aed] flex items-center gap-3 font-medium before:content-[''] before:w-7 md:before:w-10 before:h-[1.5px] before:bg-[#7c3aed] before:rounded-full before:shrink-0 mb-5">Order Tracking</div>
         <h1 className="font-serif text-[36px] md:text-5xl font-light leading-[1.1] text-[#0f0a1e] mb-8">
           Track your<br />
           <em className="italic text-[#7c3aed]">order</em>
@@ -87,25 +87,29 @@ function OrderTracker() {
 
         {/* Search */}
         <div className="mb-12">
-          <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 items-center">
             <input
               type="text"
               value={orderNumber}
               onChange={(e) => setOrderNumber(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleTrack()}
               placeholder="Enter order number (e.g., ARA-XXXXX)"
-              className="input flex-1"
+              className="w-full py-[14px] px-4 bg-white border-[1.5px] border-[rgba(124,58,237,0.2)] text-[#0f0a1e] font-sans text-[15px] font-normal rounded-[10px] transition-[border-color,box-shadow] duration-200 outline-none leading-[1.4] placeholder:text-[#9ca3af] focus:border-[#7c3aed] focus:shadow-[0_0_0_3px_rgba(124,58,237,0.1)] flex-1"
             />
-            <button onClick={handleTrack} disabled={loading} className="btn-primary px-7">
-              {loading ? "..." : "Track"}
-            </button>
+            <button
+  onClick={handleTrack}
+  disabled={loading}
+  className="w-fit sm:w-auto inline-flex items-center justify-center bg-[#7c3aed] text-white font-sans font-semibold text-[13px] md:text-sm tracking-[0.12em] uppercase py-4 px-10 md:px-12 border-none rounded-[12px] cursor-pointer transition-all duration-220 text-center no-underline leading-none m-3 hover:bg-[#5b21b6] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(124,58,237,0.28)] active:translate-y-0"
+>
+  {loading ? "..." : "Track"}
+</button>
           </div>
           {error && <p className="text-sm text-[#dc2626] mt-2.5">{error}</p>}
         </div>
 
         {/* Order Details */}
         {order && (
-          <div className="space-y-5 animate-fadeIn">
+          <div className="space-y-5 animate-fade-in">
 
             {/* Confirmed banner */}
             {order.paymentStatus === "paid" && order.status === "confirmed" && (
@@ -119,15 +123,16 @@ function OrderTracker() {
             )}
 
             {/* Order info card */}
-            <div className="card p-7">
+            <div className="bg-white border border-[rgba(124,58,237,0.1)] rounded-[14px] shadow-[0_1px_6px_rgba(0,0,0,0.04)] transition-all duration-[250ms] hover:border-[rgba(124,58,237,0.2)] hover:shadow-[0_6px_28px_rgba(124,58,237,0.1)] hover:-translate-y-0.5 p-7">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <p className="font-mono text-[12px] tracking-[0.18em] uppercase text-[#7c3aed] mb-1.5 font-medium">Order Number</p>
                   <p className="font-serif text-xl text-[#0f0a1e]">{order.orderNumber}</p>
                 </div>
-                <span className={`badge ${
-                  order.status === "delivered" ? "badge-purple" :
-                  order.status === "shipped"   ? "badge-gold"   : "badge-red"
+                <span className={`inline-block font-mono text-[11px] tracking-[0.12em] uppercase py-1.25 px-3 border rounded-full leading-[1.4] ${
+                  order.status === "delivered" ? "border-[rgba(124,58,237,0.25)] text-[#7c3aed] bg-[rgba(124,58,237,0.07)]" :
+                  order.status === "shipped"   ? "border-[rgba(201,169,110,0.35)] text-[#a0763a] bg-[rgba(201,169,110,0.08)]" :
+                                                 "border-[rgba(220,38,38,0.3)] text-[#dc2626] bg-[rgba(220,38,38,0.06)]"
                 }`}>
                   {order.status.toUpperCase()}
                 </span>
@@ -193,7 +198,7 @@ function OrderTracker() {
 
             {/* Tracking history */}
             {order.tracking && order.tracking.length > 0 && (
-              <div className="card p-7">
+              <div className="bg-white border border-[rgba(124,58,237,0.1)] rounded-[14px] shadow-[0_1px_6px_rgba(0,0,0,0.04)] transition-all duration-[250ms] hover:border-[rgba(124,58,237,0.2)] hover:shadow-[0_6px_28px_rgba(124,58,237,0.1)] hover:-translate-y-0.5 p-7">
                 <p className="font-mono text-[12px] tracking-[0.18em] uppercase text-[#7c3aed] mb-5 font-semibold">Tracking History</p>
                 <div className="space-y-5">
                   {order.tracking.map((activity, i) => (
@@ -219,7 +224,7 @@ function OrderTracker() {
             )}
 
             {/* Order items */}
-            <div className="card p-7">
+            <div className="bg-white border border-[rgba(124,58,237,0.1)] rounded-[14px] shadow-[0_1px_6px_rgba(0,0,0,0.04)] transition-all duration-[250ms] hover:border-[rgba(124,58,237,0.2)] hover:shadow-[0_6px_28px_rgba(124,58,237,0.1)] hover:-translate-y-0.5 p-7">
               <p className="font-mono text-[12px] tracking-[0.18em] uppercase text-[#7c3aed] mb-5 font-semibold">Order Items</p>
               <div className="space-y-3">
                 {order.items.map((item, i) => (
@@ -239,7 +244,7 @@ function OrderTracker() {
             </div>
 
             {/* Shipping address */}
-            <div className="card p-7">
+            <div className="bg-white border border-[rgba(124,58,237,0.1)] rounded-[14px] shadow-[0_1px_6px_rgba(0,0,0,0.04)] transition-all duration-[250ms] hover:border-[rgba(124,58,237,0.2)] hover:shadow-[0_6px_28px_rgba(124,58,237,0.1)] hover:-translate-y-0.5 p-7">
               <p className="font-mono text-[12px] tracking-[0.18em] uppercase text-[#7c3aed] mb-5 font-semibold">Delivery Address</p>
               <div className="space-y-2.5 text-base">
                 <p className="font-medium text-[#0f0a1e]">{order.shippingAddress.fullName}</p>
@@ -271,7 +276,7 @@ function OrderTracker() {
           <div className="text-center py-20">
             <div className="text-6xl mb-5">📦</div>
             <p className="text-base text-[#6b7280] mb-7">Enter your order number above to track your shipment</p>
-            <Link href="/products" className="btn-secondary inline-block">
+            <Link href="/products" className="inline-block bg-transparent border-[1.5px] border-[rgba(124,58,237,0.2)] text-[#6b7280] font-sans font-medium text-[13px] md:text-sm tracking-widest uppercase py-3.75 px-8 md:py-4.25 md:px-9 rounded-[10px] cursor-pointer transition-all duration-220 text-center no-underline leading-[1.2] hover:border-[#7c3aed] hover:text-[#7c3aed] hover:bg-[#f5f3ff]">
               Continue Shopping
             </Link>
           </div>

@@ -18,14 +18,14 @@ export default function Header() {
           Layout trick: relative container, logo flush-left, icons flush-right,
           nav absolutely centred so it never shifts with asymmetric side widths.
         */}
-        <div className="relative h-18 md:h-20 w-full max-w-350 mx-auto px-5 md:px-10 lg:px-16 flex items-center justify-between">
+        <div className="relative h-18 md:h-20 w-full  mx-auto px-5 md:px-10 lg:px-16 flex items-center justify-between">
 
           {/* Logo — left */}
           <Link
             href="/"
-            className="font-serif text-[22px] md:text-[26px] font-bold tracking-[0.35em] text-[#7c3aed] hover:text-[#5b21b6] transition-colors z-10"
+           
           >
-            <img src="Pastedimage.png" alt="" className="w-20 px-2"/>
+            <img src="Pastedimage.png" alt="" className="w-20 p-4"/>
           </Link>
 
           {/* Nav — dead-centre via absolute positioning */}
@@ -51,20 +51,20 @@ export default function Header() {
               className="hidden md:flex p-3 text-[#6b7280] hover:text-[#7c3aed] hover:bg-[#f5f3ff] rounded-lg transition-colors"
               title="Search"
             >
-              <Search size={20} />
+              <Search size={28} />
             </button>
             <button
               className="hidden md:flex p-3 text-[#6b7280] hover:text-[#7c3aed] hover:bg-[#f5f3ff] rounded-lg transition-colors"
               title="Account"
             >
-              <User size={20} />
+              <User size={28} />
             </button>
             <button
               className="relative p-3 text-[#6b7280] hover:text-[#7c3aed] hover:bg-[#f5f3ff] rounded-lg transition-colors"
               title="Cart"
               onClick={toggleCart}
             >
-              <ShoppingBag size={20} />
+              <ShoppingBag size={28} />
               {itemCount > 0 && (
                 <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 bg-[#7c3aed] text-white text-[11px] font-bold rounded-full flex items-center justify-center leading-none">
                   {itemCount}

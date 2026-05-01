@@ -195,11 +195,13 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      <div className="max-w-[1400px] mx-auto px-5 py-10 md:px-10 md:py-14 lg:px-16 lg:py-16">
-        <div className="flex flex-col lg:flex-row gap-10 lg:gap-14">
+      <div className=" px-5 py-10 md:px-10 md:py-14 lg:px-16 lg:py-16">
+        
+        <div className="flex flex-col lg:flex-row gap-10 lg:gap-14 items-center justify-center">
 
           {/* ── Left — Form ─────────────────────────────────────── */}
           <div className="flex-1 lg:max-w-xl order-2 lg:order-1">
+            <br />
             <div className="bg-white border border-[rgba(124,58,237,0.1)] rounded-2xl p-7 md:p-9 shadow-[0_2px_16px_rgba(124,58,237,0.06)]">
               <h2 className="font-mono text-[13px] tracking-[0.18em] uppercase text-[#7c3aed] mb-6 font-semibold">
                 Delivery Details
@@ -273,7 +275,7 @@ export default function CheckoutPage() {
           </div>
 
           {/* ── Right — Order Summary ─────────────────────────── */}
-          <div className="lg:w-[420px] xl:w-[460px] order-1 lg:order-2">
+          <div className="lg:w-[420px] xl:w-[460px] order-1 lg:order-2"><br />
             <div className="lg:sticky lg:top-28 bg-white border border-[rgba(124,58,237,0.1)] rounded-2xl p-7 shadow-[0_2px_16px_rgba(124,58,237,0.06)]">
               <h2 className="font-mono text-[13px] tracking-[0.18em] uppercase text-[#7c3aed] mb-5 font-semibold">
                 Order Summary
@@ -317,7 +319,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Add-ons */}
-              <div className="mb-6">
+              {/* <div className="mb-6">
                 <h3 className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#9ca3af] mb-3 font-medium">Add to Your Order</h3>
                 <div className="space-y-2.5">
                   {addOns.slice(0, 2).map((addon) => {
@@ -345,7 +347,7 @@ export default function CheckoutPage() {
                     );
                   })}
                 </div>
-              </div>
+              </div> */}
 
               <div className="h-px bg-[rgba(124,58,237,0.08)] my-5" />
 

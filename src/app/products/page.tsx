@@ -35,7 +35,7 @@ export default function ProductsPage() {
 
       {/* Trust bar */}
       <div className="border-t border-b border-[rgba(124,58,237,0.1)] bg-[#faf8ff]">
-        <div className="max-w-[1400px] mx-auto grid grid-cols-1 sm:grid-cols-3">
+        <div className=" mx-auto grid grid-cols-1 sm:grid-cols-3">
           {[
             { icon: "🚚", title: "Free Shipping", sub: "Across India" },
             { icon: "↩️", title: "30-Day Returns",  sub: "No questions asked" },
@@ -48,7 +48,9 @@ export default function ProductsPage() {
             </div>
           ))}
         </div>
+        
       </div>
+      <br />
     </div>
   );
 }
