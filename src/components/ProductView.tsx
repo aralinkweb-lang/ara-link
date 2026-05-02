@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Star, Share2, Heart, Check, Truck, Shield, RotateCcw } from "lucide-react";
 import type { Product, ProductVariant } from "@/types";
 import { useCart } from "@/store/cart";
@@ -131,14 +132,20 @@ export default function ProductView({ product }: ProductViewProps) {
             Save{" "}
             {formatPrice(product.originalPrice - product.price)}
           </span>
-          {/* BUTTON */}
-        <div className="flex flex-row sm:flex-row gap-3 mb-8">
+          {/* BUTTONS */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <button
             onClick={handleAddToCart}
-            className="btn-primary w-full sm:w-[240px]"
+            className="btn-primary flex-1"
+          >
+            Add to Cart
+          </button>
+          <Link
+            href="/checkout"
+            className="btn-primary flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white"
           >
             Order Now
-          </button>
+          </Link>
         </div>
         </div>
 

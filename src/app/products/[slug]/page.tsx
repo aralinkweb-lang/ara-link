@@ -4,6 +4,7 @@ import ProductView from "@/components/ProductView";
 import { StockBar } from "@/components/AddOnSection";
 import AddOnSectionClient from "@/components/AddOnSectionClient";
 import ReviewsCarousel from "@/components/ReviewsCarousel";
+import StickyOrderCTA from "@/components/StickyOrderCTA";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -31,7 +32,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   return (
     <div className="bg-white min-h-screen">
       <ProductView product={product} />
-
+      <StickyOrderCTA product={product} />
 
       <div className="h-px bg-[rgba(124,58,237,0.08)]" />
 <br />
@@ -175,6 +176,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
      
       <ReviewsCarousel />
+      <br />
     </div>
   );
 }

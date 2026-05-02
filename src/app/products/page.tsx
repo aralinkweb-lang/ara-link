@@ -51,8 +51,7 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* Reviews */}
-      <ReviewsCarousel />
+     
     </div>
   );
 }

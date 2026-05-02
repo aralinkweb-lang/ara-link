@@ -29,15 +29,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             </span>
           </div>
 
-          {/* Top-left badges */}
-          <div className="absolute top-4 left-4 flex flex-col gap-2">
-            {product.badges.includes("Limited Stock") && (
-              <span className="badge badge-gold">🔥 Limited</span>
-            )}
-            {product.stock < 20 && (
-              <span className="badge badge-red">Only {product.stock} Left</span>
-            )}
-          </div>
+         
 
           {/* Discount badge */}
           {discount > 0 && (
