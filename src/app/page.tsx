@@ -3,6 +3,7 @@ import { ArrowRight, Zap } from "lucide-react";
 import { products, reviews, benefits, ritualSteps, otoProducts } from "@/data/products";
 import { formatPrice } from "@/lib/utils";
 import ProductCard from "@/components/ProductCard";
+import ReviewsCarousel from "@/components/ReviewsCarousel";
 
 export default function Home() {
   const featuredProduct = products[0];
@@ -193,36 +194,7 @@ export default function Home() {
       </section>
 
       {/* ── Reviews ──────────────────────────────────────────────────────── */}
-      <section className="bg-white">
-        <div className="section">
-          <div className="eyebrow mb-5">The Verdict From Others</div>
-          <h2 className="font-serif text-[34px] md:text-5xl font-light leading-[1.1] text-[#0f0a1e] mb-10">
-            They tried arguing.<br />
-            <em className="italic text-[#7c3aed]">Then ordered a second one.</em>
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {reviews.map((review) => (
-              <div key={review.id} className="card p-7 md:p-8 flex flex-col">
-                <div className="text-[#c9a96e] text-base tracking-wider mb-4">★★★★★</div>
-                <p className="font-serif text-[17px] italic text-[#0f0a1e] leading-relaxed mb-5 flex-1">
-                  &ldquo;{review.text}&rdquo;
-                </p>
-                <div>
-                  <div className="font-mono text-[12px] tracking-[0.15em] uppercase text-[#374151] font-semibold">
-                    {review.author}
-                  </div>
-                  <div className="text-sm text-[#9ca3af] mt-1">{review.role}</div>
-                  {review.verified && (
-                    <span className="inline-block mt-3 font-mono text-[11px] tracking-[0.1em] uppercase text-[#7c3aed] bg-[#f5f3ff] border border-[rgba(124,58,237,0.2)] py-1 px-2.5 rounded-full">
-                      ✓ Verified Purchase
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+       <ReviewsCarousel />
 
      
 

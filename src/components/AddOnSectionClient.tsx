@@ -24,24 +24,28 @@ export default function AddOnSectionClient({ addOns }: AddOnSectionClientProps) 
   };
 
   return (
-    <section className="py-10 px-5 md:px-10 lg:px-16 bg-[#faf8ff] max-w-[1400px] mx-auto">
-      <div className="flex items-center gap-4 mb-7">
-        <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#c9a96e]" />
-        <span className="font-mono text-[12px] md:text-[13px] tracking-[0.26em] uppercase text-[#7c3aed] font-medium">
-          Complete The Ritual
-        </span>
-        <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#c9a96e]" />
+   <section className="py-10 px-5 md:px-10 lg:px-16 bg-[#faf8ff] mx-auto">
+  <div className="flex items-center justify-center gap-4 mb-7">
+    <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#c9a96e]" />
+
+    <span className="font-mono text-[12px] md:text-[13px] tracking-[0.26em] uppercase text-[#7c3aed] font-medium">
+      Complete The Ritual
+    </span>
+
+    <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#c9a96e]" />
+  </div>
+
+  <div className="flex flex-col items-center gap-4 w-full">
+    {addOns.map((addon) => (
+      <div key={addon.id} className="w-full max-w-[720px]">
+        <AddOnCard
+          addon={addon}
+          onToggle={handleToggle}
+          selected={selectedAddOns.has(addon.id)}
+        />
       </div>
-      <div className="space-y-4 max-w-3xl mx-auto">
-        {addOns.map((addon) => (
-          <AddOnCard
-            key={addon.id}
-            addon={addon}
-            onToggle={handleToggle}
-            selected={selectedAddOns.has(addon.id)}
-          />
-        ))}
-      </div>
-    </section>
+    ))}
+  </div>
+</section>
   );
 }

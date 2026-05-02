@@ -13,13 +13,13 @@ const supportLinks = [
 ];
 
 const legalLinks = [
-  { href: "/privacy", label: "Privacy Policy" },
-  { href: "/terms",   label: "Terms of Service" },
+  { href: "/privacy-policy", label: "Privacy Policy" },
+  { href: "/terms",          label: "Terms of Service" },
 ];
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-[#faf8ff] border-t border-[rgba(124,58,237,0.1)]">
+    <footer className="w-full bg-[#faf8ff] border-t border-[rgba(124,58,237,0.1)] ">
       <div className="max-w-[1400px] mx-auto px-5 md:px-10 lg:px-16 py-16 md:py-20">
 
         {/* Top grid */}

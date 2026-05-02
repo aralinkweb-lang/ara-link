@@ -1,5 +1,6 @@
 import { products } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
+import ReviewsCarousel from "@/components/ReviewsCarousel";
 
 export const metadata = {
   title: "Shop All Products — ARA Cold Therapy",
@@ -48,9 +49,10 @@ export default function ProductsPage() {
             </div>
           ))}
         </div>
-        
       </div>
-      <br />
+
+      {/* Reviews */}
+      <ReviewsCarousel />
     </div>
   );
 }
