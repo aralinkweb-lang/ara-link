@@ -41,7 +41,7 @@ export default function RootLayout({
     <html lang="en" className={`${playfair.variable} ${dmSans.variable} ${dmMono.variable}`}>
       <body className="min-h-screen flex flex-col bg-white text-[#0f0a1e] font-sans antialiased">
         <CartProvider>
-          <AnnouncementBar1 />
+         
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />

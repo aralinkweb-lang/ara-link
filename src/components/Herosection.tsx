@@ -30,13 +30,14 @@ export default function HeroSection() {
         </div>
 <br />
         <div className="mt-10 flex w-full max-w-md flex-col gap-3 sm:flex-row">
-          <Link href="/products" className="btn-primary flex-1 flex items-center justify-center">
-            View Products
+          <Link href="/products/ara-ice-bowl" className="btn-primary flex-1 flex items-center justify-center">
+            View Product
           </Link>
           <Link href="/products" className="btn-secondary flex-1 text-center">
             Shop All
           </Link>
         </div>
+        <br />
       </div>
     </section>
   );
