@@ -17,8 +17,8 @@ export default function CartDrawer({ isOpen }: CartDrawerProps) {
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300 ${
-          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        className={`fixed inset-0 bg-black/40 z-50 transition-opacity duration-300 ${
+          isOpen ? "opacity-100 pointer-events-auto backdrop-blur-sm" : "opacity-0 pointer-events-none"
         }`}
         onClick={closeCart}
       />

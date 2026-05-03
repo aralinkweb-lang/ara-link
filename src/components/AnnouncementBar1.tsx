@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-export default function AnnouncementBar() {
+export default function AnnouncementBar1() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const announcements = [
@@ -19,7 +19,11 @@ export default function AnnouncementBar() {
   }, [announcements.length]);
 
   return (
-    <div className="w-full bg-linear-to-r from-[#5b21b6] via-[#7c3aed] to-[#5b21b6] text-white text-center py-3 px-4">
+    <div className="announcement-bar" style={{
+      backgroundColor: '#7c3aed',
+      color: 'white',
+      padding: '12px 24px',
+    }}>
       <span className="font-mono text-[12px] md:text-[13px] tracking-[0.14em] uppercase">
         {announcements[currentIndex]}
       </span>

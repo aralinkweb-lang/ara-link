@@ -4,7 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/store/cart";
-import AnnouncementBar from "@/components/AnnouncementBar";
+import AnnouncementBar1 from "@/components/AnnouncementBar1";
 import ExitIntentPopup from "@/components/ExitIntentPopup";
 
 const playfair = Playfair_Display({
@@ -41,7 +41,7 @@ export default function RootLayout({
     <html lang="en" className={`${playfair.variable} ${dmSans.variable} ${dmMono.variable}`}>
       <body className="min-h-screen flex flex-col bg-white text-[#0f0a1e] font-sans antialiased">
         <CartProvider>
-          <AnnouncementBar />
+          <AnnouncementBar1 />
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />

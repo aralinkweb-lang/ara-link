@@ -62,16 +62,17 @@ html {
 }
 
 body {
-  background: var(--bg);
+  
   color: var(--text);
   font-family: var(--font-dm-sans), "DM Sans", sans-serif;
   font-weight: 400;
   font-size: 1rem;
-  line-height: 1.6;
+ 
   letter-spacing: 0.005em;
-  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 ::-webkit-scrollbar {
@@ -297,13 +298,14 @@ body {
 /* ── Section ────────────────────────────────────────────── */
 .section {
   padding: 72px 24px;
-  margin: 2 auto;
+  margin: 0 auto;
+  max-width: var(--max-w);
 }
 @media (min-width: 768px) {
-  .section { padding: 96px 48px; margin: 2;}
+  .section { padding: 96px 48px; margin: 0 auto; }
 }
 @media (min-width: 1024px) {
-  .section { padding: 120px 72px; margin: 2; }
+  .section { padding: 120px 72px; margin: 0 auto; }
 }
 
 /* ── Divider ────────────────────────────────────────────── */
@@ -329,4 +331,11 @@ body {
   background: var(--surface2);
   animation: pulseDot 2s infinite;
   border-radius: 6px;
+}
+
+/* ── Announcement Bar ───────────────────────────────────── */
+.announcement-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

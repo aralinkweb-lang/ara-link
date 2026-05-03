@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Search, User, ShoppingBag, Menu, X } from "lucide-react";
 import { useCart } from "@/store/cart";
 import CartDrawer from "./CartDrawer";
+import AnnouncementBar from "./AnnouncementBar1";
 
 export default function Header() {
   const { getItemCount, toggleCart, state } = useCart();
@@ -13,6 +14,7 @@ export default function Header() {
 
   return (
     <>
+    
       <header className="sticky top-0 z-40 w-full bg-white border-b border-[rgba(124,58,237,0.1)] shadow-[0_1px_16px_rgba(124,58,237,0.06)]">
         {/*
           Layout trick: relative container, logo flush-left, icons flush-right,
