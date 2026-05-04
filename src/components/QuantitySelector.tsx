@@ -1,46 +1,44 @@
 "use client";
 
 interface QuantitySelectorProps {
-  quantity: number;
-  onQuantityChange: (quantity: number) => void;
-  max?: number;
+  value: number;
+  onChange: (value: number) => void;
   min?: number;
+  max?: number;
 }
 
-export default function QuantitySelector({ 
-  quantity, 
-  onQuantityChange, 
-  max = 10, 
-  min = 1 
+export default function QuantitySelector({
+  value,
+  onChange,
+  min = 1,
+  max = 99,
 }: QuantitySelectorProps) {
-  const decrease = () => {
-    if (quantity > min) {
-      onQuantityChange(quantity - 1);
-    }
+  const handleDecrement = () => {
+    if (value > min) onChange(value - 1);
   };
 
-  const increase = () => {
-    if (quantity < max) {
-      onQuantityChange(quantity + 1);
-    }
+  const handleIncrement = () => {
+    if (value < max) onChange(value + 1);
   };
 
   return (
-    <div className="flex items-center gap-0 border border-[rgba(184,223,232,0.14)] w-fit">
-      <button 
-        onClick={decrease}
-        disabled={quantity <= min}
-        className="w-10 h-10 bg-transparent border-none text-[#edeae4] text-lg cursor-pointer transition-colors hover:bg-[rgba(184,223,232,0.05)] disabled:opacity-50 disabled:cursor-not-allowed"
+    <div className="flex items-center border border-edge rounded-xl overflow-hidden">
+      <button
+        onClick={handleDecrement}
+        disabled={value <= min}
+        className="w-8 h-8 flex items-center justify-center text-ink-2 hover:bg-paper disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-semibold text-lg"
+        aria-label="Decrease quantity"
       >
         −
       </button>
-      <div className="w-11 text-center font-mono text-sm text-[#edeae4]">
-        {quantity}
-      </div>
-      <button 
-        onClick={increase}
-        disabled={quantity >= max}
-        className="w-10 h-10 bg-transparent border-none text-[#edeae4] text-lg cursor-pointer transition-colors hover:bg-[rgba(184,223,232,0.05)] disabled:opacity-50 disabled:cursor-not-allowed"
+      <span className="w-10 h-8 flex items-center justify-center text-sm font-bold text-ink border-x border-edge">
+        {value}
+      </span>
+      <button
+        onClick={handleIncrement}
+        disabled={value >= max}
+        className="w-8 h-8 flex items-center justify-center text-ink-2 hover:bg-paper disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-semibold text-lg"
+        aria-label="Increase quantity"
       >
         +
       </button>

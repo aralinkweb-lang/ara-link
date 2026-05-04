@@ -1,164 +1,92 @@
 import Link from "next/link";
-import { ArrowRight, Zap } from "lucide-react";
-import { products, reviews, benefits, ritualSteps, otoProducts } from "@/data/products";
-import { formatPrice } from "@/lib/utils";
+import { products, reviews, benefits, ritualSteps } from "@/data/products";
+import HeroSection from "@/components/HeroSection";
+import TrustBar from "@/components/TrustBar";
+import BenefitsSection from "@/components/BenefitsSection";
+import RitualSteps from "@/components/RitualSteps";
+import ReviewsMarquee from "@/components/ReviewsMarquee";
 import ProductCard from "@/components/ProductCard";
-import ReviewsCarousel from "@/components/ReviewsCarousel";
-import HeroSection from "@/components/Herosection";
 
-export default function Home() {
-  const featuredProduct = products[0];
-  const heroSavings = featuredProduct.originalPrice - featuredProduct.price;
+export default function HomePage() {
+  const featuredProducts = products.filter((p) => p.isFeatured).slice(0, 4);
 
   return (
-    <div >
+    <>
+      <HeroSection />
+      <TrustBar />
 
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-     <HeroSection/>
-      {/* ── Who Owns This ────────────────────────────────────────────────── */}
-      <section className=" bg-[#faf8ff]">
-        <div className="section">
-          <div className="max-w-3xl mb-14">
-            <div className="eyebrow mb-5 ">The Owner&apos;s Profile</div>
-            <h2 className="font-serif text-[34px] md:text-5xl lg:text-[56px] font-light leading-[1.1] text-[#0f0a1e] mb-6">
-              This isn&apos;t for everyone.<br />
-              <em className="italic text-[#7c3aed]">That&apos;s the point.</em>
-            </h2>
-            <p className="text-base md:text-lg text-[#6b7280] leading-relaxed max-w-2xl">
-              ARA doesn&apos;t compete for shelf space with your 12-step routine. It either becomes the
-              first thing you do every morning — or it doesn&apos;t belong in your life.
-              <br /><br />
-              <strong className="text-[#0f0a1e] font-medium">Here&apos;s who it belongs to.</strong>
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="card p-8 md:p-16  overflow-hidden">
-              <span className="p-4"></span>
-              <div className="font-mono text-[18px] tracking-[0.2em]  p-2 uppercase text-[#7c3aed] mt-2 font-medium">The Performer</div>
-              
-              <h4 className="font-serif text-xl md:text-2xl font-medium text-[#0f0a1e] mb-3 leading-snug">
-                She doesn&apos;t have time for complicated.
-              </h4>
-              <p className="text-[15px] md:text-base text-[#6b7280] leading-relaxed mb-5">
-                Six meetings before noon. Skincare needs to work before she&apos;s fully awake. She doesn&apos;t
-                want five steps. She wants one that does the job of three.
-              </p>
-              <div className="text-[15px] md:text-base text-[#0f0a1e] border-t border-[rgba(124,58,237,0.1)] pt-5">
-                15 seconds in ARA. Serum after. Done.
-                <span className="block text-sm text-[#6b7280] mt-2">Her skin looks ready before her coffee is.</span>
-              </div>
-            </div>
-
-            <div className="card p-12 md:p-18  overflow-hidden">
-              <div className="font-mono text-[18px] tracking-[0.2em] uppercase text-[#7c3aed] mb-4 font-medium">The Biohacker</div>
-              <h4 className="font-serif text-xl md:text-2xl font-medium text-[#0f0a1e] mb-3 leading-snug">
-                He&apos;s already read the research.
-              </h4>
-              <p className="text-[15px] md:text-base text-[#6b7280] leading-relaxed mb-5">
-                Wim Hof. Huberman. Cold exposure protocols on his calendar every morning. He knows the
-                science. He&apos;s been doing it with a kitchen bowl for two years.
-              </p>
-              <div className="text-[15px] md:text-base text-[#0f0a1e] border-t border-[rgba(124,58,237,0.1)] pt-5">
-                ARA is the tool his protocol always deserved.
-                <span className="block text-sm text-[#6b7280] mt-2">The kitchen bowl never belonged in a serious ritual.</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── The Ritual ───────────────────────────────────────────────────── */}
-      <section className="bg-white">
-        <div className="section">
-          <div className="max-w-2xl">
-            <div className="eyebrow mb-5">The Method</div>
-            <h2 className="font-serif text-[34px] md:text-5xl font-light leading-[1.1] text-[#0f0a1e] mb-10">
-              60 seconds.<br />
-              <em className="italic text-[#7c3aed]">No serum does this.</em>
-            </h2>
-            <br />
-            <div className="space-y-0">
-              {ritualSteps.map((step, idx) => (
-                <div
-                  key={step.step}
-                  className={`flex gap-6 py-7 ${idx < ritualSteps.length - 1 ? "border-b border-[rgba(124,58,237,0.08)]" : ""}`}
-                >
-                  <span className="font-mono text-sm text-[#7c3aed] font-semibold pt-0.5 w-9 flex-shrink-0">
-                    {step.step}
-                  </span>
-                  <div>
-                    <h4 className="text-[17px] md:text-lg font-semibold text-[#0f0a1e] mb-2">{step.title}</h4>
-                    <p className="text-[15px] md:text-base text-[#6b7280] leading-relaxed">{step.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── The Science ──────────────────────────────────────────────────── */}
-      <section className="bg-[#faf8ff]">
-        <div className="section">
-          <div className="max-w-2xl">
-            <div className="eyebrow mb-5">The Science</div>
-            <h2 className="font-serif text-[34px] md:text-5xl font-light leading-[1.1] text-[#0f0a1e] mb-10">
-              What cold actually does<br />
-              <em className="italic text-[#7c3aed]">to your face.</em>
-            </h2>
-            <br />
-            <div className="space-y-0">
-              {benefits.map((benefit, index) => (
-                <div
-                  key={index}
-                  className={`flex gap-6 py-6 ${index < benefits.length - 1 ? "border-b border-[rgba(124,58,237,0.08)]" : ""}`}
-                >
-                  <span className="text-2xl w-9 flex-shrink-0 mt-0.5 text-center">{benefit.icon}</span>
-                  <div>
-                    <h4 className="text-[17px] md:text-lg font-semibold text-[#0f0a1e] mb-1.5">{benefit.title}</h4>
-                    <p className="text-[15px] md:text-base text-[#6b7280] leading-relaxed">{benefit.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Reviews ──────────────────────────────────────────────────────── */}
-       <ReviewsCarousel />
-
-     
-
-      {/* ── Products Grid ────────────────────────────────────────────────── */}
-      <section className="bg-white">
-        <div className="section">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-10">
+      {/* Featured Products */}
+      <section className="bg-white py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-end justify-between mb-10">
             <div>
-              <div className="eyebrow mb-5">Our Products</div>
-              <h2 className="font-serif text-[34px] md:text-5xl lg:text-[56px] font-light leading-[1.1] text-[#0f0a1e]">
-                Shop the<br />
-                <em className="italic text-[#7c3aed]">Cold Collection</em>
+              <p className="text-xs font-bold tracking-widest uppercase text-brand mb-2">
+                Best Sellers
+              </p>
+              <h2 className="text-3xl sm:text-4xl font-black text-ink">
+                Featured Products
               </h2>
             </div>
             <Link
               href="/products"
-              className="text-base text-[#7c3aed] hover:text-[#5b21b6] font-medium transition-colors flex items-center gap-2"
+              className="text-sm font-semibold text-brand hover:text-brand-hover transition-colors hidden sm:block"
             >
-              View All <ArrowRight size={16} />
+              View All →
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.map((product) => (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {featuredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
+          </div>
+          <div className="mt-8 text-center sm:hidden">
+            <Link
+              href="/products"
+              className="border border-edge rounded-2xl px-6 py-3 font-semibold text-sm text-ink-2 hover:border-brand hover:text-brand transition-colors inline-block"
+            >
+              View All Products
+            </Link>
           </div>
         </div>
       </section>
 
-      
+      <BenefitsSection />
+      <RitualSteps />
+      <ReviewsMarquee reviews={reviews} />
 
-    </div>
+      {/* CTA Banner */}
+      <section className="relative py-20 overflow-hidden bg-brand">
+        {/* Decorative circles */}
+        <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-white/5 pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-56 h-56 rounded-full bg-white/5 pointer-events-none" />
+
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-xs font-bold tracking-widest uppercase text-white/60 mb-4">
+            Start Today
+          </p>
+          <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight mb-6">
+            Ready to Transform Your Morning?
+          </h2>
+          <p className="text-base text-white/70 mb-10 max-w-md mx-auto leading-relaxed">
+            Join 847+ customers who&apos;ve made cold therapy their first step
+            every morning. Results guaranteed or your money back.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/products"
+              className="bg-white text-brand rounded-2xl px-8 py-4 font-bold text-sm hover:bg-brand-light transition-colors shadow-lg"
+            >
+              Shop Now →
+            </Link>
+            <Link
+              href="/products/ara-ice-bowl"
+              className="border border-white/40 text-white rounded-2xl px-8 py-4 font-bold text-sm hover:bg-white/10 transition-colors"
+            >
+              View ARA Ice Bowl
+            </Link>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

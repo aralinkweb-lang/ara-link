@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyPaymentSignature } from "@/lib/razorpay";
-import { updateOrder } from "@/lib/db";
+import { updateOrder, getOrderById } from "@/lib/db";
 import { createDelhiveryShipment } from "@/lib/delhivery";
+import { updateSheetPaymentStatus } from "@/lib/sheets";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,12 +23,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Fetch order to get orderNumber for sheet update
+    const existingOrder = await getOrderById(orderId);
+
     // Update order with payment details
     const updatedOrder = await updateOrder(orderId, {
       paymentStatus: "paid",
       paymentId: razorpay_payment_id,
       orderStatus: "confirmed",
     });
+
+    // Update Google Sheet status
+    if (existingOrder?.orderNumber) {
+      await updateSheetPaymentStatus(existingOrder.orderNumber, "paid", "confirmed");
+    }
 
     if (!updatedOrder) {
       return NextResponse.json(

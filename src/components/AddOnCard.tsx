@@ -1,71 +1,73 @@
 "use client";
+
 import type { AddOn } from "@/types";
 import { formatPrice } from "@/lib/utils";
-import { Check } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 
 interface AddOnCardProps {
   addon: AddOn;
-  onToggle: (id: string, selected: boolean) => void;
-  selected?: boolean;
+  onAdd: () => void;
+  added: boolean;
 }
 
-export default function AddOnCard({ addon, onToggle, selected = false }: AddOnCardProps) {
+export default function AddOnCard({ addon, onAdd, added }: AddOnCardProps) {
+  const discount = Math.round(
+    ((addon.originalPrice - addon.price) / addon.originalPrice) * 100
+  );
+
   return (
     <div
-      onClick={() => onToggle(addon.id, !selected)}
-      className={`border rounded-xl cursor-pointer p-5 flex gap-4 items-start relative overflow-hidden transition-all duration-200 ${
-        selected
-          ? "bg-[#faf8ff] border-[#7c3aed] shadow-[0_0_0_3px_rgba(124,58,237,0.08)]"
-          : "bg-white border-[rgba(124,58,237,0.15)] hover:border-[rgba(124,58,237,0.3)] hover:shadow-sm"
+      className={`bg-white rounded-2xl border p-5 flex items-start gap-4 transition-all duration-200 ${
+        added
+          ? "border-brand bg-brand/5"
+          : "border-edge hover:border-brand/40"
       }`}
     >
-      {/* Status badge */}
-      <div
-        className={`absolute top-0 right-0 font-mono text-[11px] font-medium tracking-[0.12em] py-1.5 px-3 rounded-bl-lg ${
-          selected ? "bg-[#7c3aed] text-white" : "bg-[#c9a96e] text-white"
-        }`}
-      >
-        {selected ? "✓ ADDED" : "ADD-ON"}
-      </div>
-
       {/* Icon */}
-      <div className="w-16 h-16 bg-[#f5f3ff] border border-[rgba(124,58,237,0.12)] rounded-lg flex items-center justify-center text-2xl shrink-0">
+      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-brand/10 flex items-center justify-center text-2xl">
         {addon.icon}
       </div>
 
       {/* Content */}
-      <div className="flex-1 pr-10">
-        <h4 className="text-base font-medium text-[#0f0a1e] mb-1.5">{addon.name}</h4>
-        <p className="text-sm text-[#6b7280] leading-relaxed mb-3">
-          {addon.description}
-          {addon.amazonLink && (
-            <a
-              href={addon.amazonLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="text-[#7c3aed] ml-1 hover:underline"
-            >
-              View on Amazon →
-            </a>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h4 className="font-bold text-sm text-ink">{addon.name}</h4>
+          {discount > 0 && (
+            <span className="flex-shrink-0 text-xs font-bold text-brand bg-brand/10 px-2 py-0.5 rounded-full">
+              -{discount}%
+            </span>
           )}
-        </p>
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <span className="font-semibold text-lg text-[#0f0a1e]">{formatPrice(addon.price)}</span>
-          <span className="text-sm text-[#9ca3af] line-through">{formatPrice(addon.originalPrice)}</span>
-          <span className="badge badge-purple">
-            Save {formatPrice(addon.originalPrice - addon.price)}
-          </span>
         </div>
-      </div>
-
-      {/* Checkbox */}
-      <div
-        className={`w-6 h-6 rounded-md border flex items-center justify-center shrink-0 mt-6 transition-all ${
-          selected ? "bg-[#7c3aed] border-[#7c3aed] text-white" : "border-[rgba(124,58,237,0.25)]"
-        }`}
-      >
-        {selected && <Check size={14} />}
+        <p className="text-xs text-ink-muted leading-relaxed mb-3 line-clamp-2">
+          {addon.description}
+        </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="font-black text-sm text-ink">{formatPrice(addon.price)}</span>
+            <span className="text-xs text-ink-muted line-through">
+              {formatPrice(addon.originalPrice)}
+            </span>
+          </div>
+          <button
+            onClick={onAdd}
+            disabled={added}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+              added
+                ? "bg-brand/10 text-brand cursor-default"
+                : "bg-brand text-white hover:bg-brand-hover"
+            }`}
+          >
+            {added ? (
+              <>
+                <Check className="w-3.5 h-3.5" /> Added
+              </>
+            ) : (
+              <>
+                <Plus className="w-3.5 h-3.5" /> Add
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

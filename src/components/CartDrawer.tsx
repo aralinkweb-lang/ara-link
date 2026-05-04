@@ -1,143 +1,171 @@
 "use client";
 
-import Link from "next/link";
-import { X, Plus, Minus, ArrowRight, ShoppingBag } from "lucide-react";
-import { useCart, getItemKey } from "@/store/cart";
+import { useCart } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
+import Image from "next/image";
+import Link from "next/link";
+import { X, Trash2, ShoppingBag } from "lucide-react";
+import QuantitySelector from "./QuantitySelector";
 
-interface CartDrawerProps {
-  isOpen: boolean;
-}
+export default function CartDrawer() {
+  const { state, closeCart, removeItem, updateQuantity, getSubtotal, getItemCount } =
+    useCart();
 
-export default function CartDrawer({ isOpen }: CartDrawerProps) {
-  const { state, closeCart, removeItem, updateQuantity, getSubtotal, getTotal } = useCart();
-  const { items } = state;
+  const { isOpen, items } = state;
+  const subtotal = getSubtotal();
+  const itemCount = getItemCount();
 
   return (
     <>
-      {/* Overlay */}
-      <div
-        className={`fixed inset-0 bg-black/40 z-50 transition-opacity duration-300 ${
-          isOpen ? "opacity-100 pointer-events-auto backdrop-blur-sm" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={closeCart}
-      />
+      {/* Backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+          onClick={closeCart}
+        />
+      )}
 
-      {/* Drawer */}
-      <div
-        className={`fixed top-0 right-0 h-full w-full max-w-[440px] bg-white border-l border-[rgba(124,58,237,0.12)] shadow-[-8px_0_40px_rgba(124,58,237,0.08)] z-50 flex flex-col transform transition-transform duration-300 ease-out ${
+      {/* Drawer Panel */}
+      <aside
+        className={`fixed top-0 right-0 z-50 h-full w-full sm:w-[400px] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[rgba(124,58,237,0.1)]">
-          <div className="flex items-center gap-2.5">
-            <ShoppingBag size={20} className="text-[#7c3aed]" />
-            <h2 className="font-serif text-xl font-semibold text-[#0f0a1e]">Your Cart</h2>
+        <div className="flex items-center justify-between px-6 py-5 border-b border-edge">
+          <div className="flex items-center gap-2">
+            <ShoppingBag className="w-5 h-5 text-brand" />
+            <h2 className="font-bold text-lg text-ink">
+              Cart
+              {itemCount > 0 && (
+                <span className="ml-2 text-sm font-medium text-ink-muted">
+                  ({itemCount} {itemCount === 1 ? "item" : "items"})
+                </span>
+              )}
+            </h2>
           </div>
           <button
             onClick={closeCart}
-            className="p-2.5 text-[#6b7280] hover:text-[#7c3aed] hover:bg-[#f5f3ff] rounded-lg transition-colors"
+            className="p-2 rounded-full hover:bg-paper transition-colors text-ink-muted hover:text-ink"
+            aria-label="Close cart"
           >
-            <X size={20} />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Items */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           {items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center py-12 gap-5">
-              <div className="w-20 h-20 rounded-full bg-[#f5f3ff] flex items-center justify-center">
-                <ShoppingBag size={32} className="text-[#a78bfa]" />
+            <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
+              <div className="w-16 h-16 rounded-full bg-paper flex items-center justify-center">
+                <ShoppingBag className="w-8 h-8 text-ink-muted" />
               </div>
               <div>
-                <p className="font-semibold text-[#0f0a1e] mb-1.5 text-base">Your cart is empty</p>
-                <p className="text-sm text-[#6b7280]">Add something beautiful to get started.</p>
+                <p className="font-semibold text-ink mb-1">Your cart is empty</p>
+                <p className="text-sm text-ink-muted">
+                  Add products to start your cold therapy ritual.
+                </p>
               </div>
-              <Link href="/products" onClick={closeCart} className="btn-primary mt-2">
-                Shop Now
-              </Link>
+              <button
+                onClick={closeCart}
+                className="bg-brand text-white rounded-2xl px-6 py-3 font-semibold text-sm hover:bg-brand-hover transition-colors"
+              >
+                Start Shopping
+              </button>
             </div>
           ) : (
-            <div className="flex flex-col gap-4">
-              {items.map((item) => (
-                <div
-                  key={getItemKey(item)}
-                  className="flex gap-4 p-4 bg-[#faf8ff] border border-[rgba(124,58,237,0.1)] rounded-xl"
-                >
-                  {/* Image placeholder */}
-                  <div className="w-[68px] h-[68px] bg-[#f5f3ff] border border-[rgba(124,58,237,0.12)] rounded-lg flex items-center justify-center text-3xl flex-shrink-0">
-                    🧊
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start gap-2">
-                      <div className="min-w-0">
-                        <h3 className="text-[15px] font-medium text-[#0f0a1e] truncate">{item.product.name}</h3>
-                        {item.variant && (
-                          <p className="text-sm text-[#6b7280] mt-1">{item.variant.name}</p>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => removeItem(item.product.id, item.variant?.id)}
-                        className="p-1.5 text-[#9ca3af] hover:text-[#dc2626] hover:bg-red-50 rounded transition-colors flex-shrink-0"
-                      >
-                        <X size={16} />
-                      </button>
+            <ul className="flex flex-col gap-5">
+              {items.map((item) => {
+                const itemPrice = item.product.price + (item.variant?.additionalPrice ?? 0);
+                return (
+                  <li
+                    key={`${item.product.id}__${item.variant?.id ?? "default"}`}
+                    className="flex gap-4 pb-5 border-b border-edge-light last:border-0"
+                  >
+                    {/* Product Image */}
+                    <div className="w-20 h-20 rounded-xl overflow-hidden bg-paper shrink-0 relative">
+                      <Image
+                        src={getProductImage(item.product.slug)}
+                        alt={item.product.name}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                      />
                     </div>
 
-                    {/* Qty + Price */}
-                    <div className="flex items-center justify-between mt-3.5">
-                      <div className="flex items-center border border-[rgba(124,58,237,0.2)] rounded-lg overflow-hidden">
+                    {/* Product Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-ink leading-tight mb-1 truncate">
+                        {item.product.name}
+                      </p>
+                      {item.variant && (
+                        <p className="text-xs text-ink-muted mb-2">
+                          {item.variant.name}
+                        </p>
+                      )}
+                      <p className="text-sm font-bold text-brand mb-3">
+                        {formatPrice(itemPrice)}
+                      </p>
+
+                      <div className="flex items-center justify-between">
+                        <QuantitySelector
+                          value={item.quantity}
+                          onChange={(qty) =>
+                            updateQuantity(item.product.id, qty, item.variant?.id)
+                          }
+                          min={1}
+                          max={item.product.stock}
+                        />
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.variant?.id)}
-                          className="w-9 h-9 flex items-center justify-center text-[#6b7280] hover:bg-[#f5f3ff] hover:text-[#7c3aed] transition-colors"
+                          onClick={() =>
+                            removeItem(item.product.id, item.variant?.id)
+                          }
+                          className="p-1.5 text-ink-muted hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"
+                          aria-label="Remove item"
                         >
-                          <Minus size={14} />
-                        </button>
-                        <span className="w-9 text-center text-sm font-medium text-[#0f0a1e]">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.variant?.id)}
-                          className="w-9 h-9 flex items-center justify-center text-[#6b7280] hover:bg-[#f5f3ff] hover:text-[#7c3aed] transition-colors"
-                        >
-                          <Plus size={14} />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                      <span className="font-semibold text-[#0f0a1e] text-base">
-                        {formatPrice(item.product.price * item.quantity)}
-                      </span>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </div>
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="px-6 py-5 border-t border-[rgba(124,58,237,0.1)] bg-white">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-base text-[#6b7280]">Subtotal</span>
-              <span className="font-semibold text-[#0f0a1e] text-lg">{formatPrice(getSubtotal())}</span>
+          <div className="px-6 py-5 border-t border-edge bg-paper">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm text-ink-2 font-medium">Subtotal</span>
+              <span className="text-lg font-bold text-ink">{formatPrice(subtotal)}</span>
             </div>
-            <p className="text-sm text-[#9ca3af] mb-5 text-center">
-              Free shipping on all orders · Taxes included
+            <p className="text-xs text-ink-muted mb-4">
+              Shipping calculated at checkout. Free shipping on all orders.
             </p>
             <Link
               href="/checkout"
               onClick={closeCart}
-              className="btn-primary w-full flex items-center justify-center gap-2"
+              className="block w-full bg-brand text-white rounded-2xl px-6 py-3.5 font-semibold text-sm text-center hover:bg-brand-hover transition-colors"
             >
-              Checkout — {formatPrice(getTotal())}
-              <ArrowRight size={16} />
+              Proceed to Checkout
             </Link>
           </div>
         )}
-      </div>
+      </aside>
     </>
   );
+}
+
+function getProductImage(slug: string): string {
+  if (slug.includes("ara-ice-bowl"))
+    return "https://images.unsplash.com/photo-1570194065650-d99fb4bedf0a?w=400&q=80";
+  if (slug.includes("rose"))
+    return "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80";
+  if (slug.includes("beetroot"))
+    return "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&q=80";
+  if (slug.includes("mint"))
+    return "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&q=80";
+  return "https://images.unsplash.com/photo-1501173727994-04cbcb2e3af1?w=400&q=80";
 }

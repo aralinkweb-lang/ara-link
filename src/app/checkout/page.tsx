@@ -1,444 +1,492 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, Lock, Truck, Shield, RotateCcw, X, Plus, Minus, Tag } from "lucide-react";
-import { useCart, getItemKey } from "@/store/cart";
+import Image from "next/image";
+import { useCart } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
-import { indianStates, addOns } from "@/data/products";
-import { applyCoupon, type Coupon } from "@/lib/coupons";
+import { indianStates } from "@/data/products";
+import { Gift, ShieldCheck, Truck, ChevronRight, CreditCard, Banknote, CheckCircle2 } from "lucide-react";
+
+const FREE_GIFT_THRESHOLD = 399;
+
+const FREE_GIFTS = [
+  {
+    id: "ice-roller",
+    name: "Ice Roller",
+    image: "https://images.unsplash.com/photo-1570194065650-d99fb4bedf0a?w=120&q=80",
+  },
+  {
+    id: "face-wash-brush",
+    name: "Face Wash Brush",
+    image: "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=120&q=80",
+  },
+  {
+    id: "hair-scalp-massager",
+    name: "Hair Scalp Massager",
+    image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=120&q=80",
+  },
+];
+
+interface CheckoutFormData {
+  fullName: string;
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+}
+
+function getProductImage(slug: string): string {
+  if (slug.includes("ara-ice-bowl"))
+    return "https://images.unsplash.com/photo-1570194065650-d99fb4bedf0a?w=200&q=70";
+  if (slug.includes("rose"))
+    return "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&q=70";
+  if (slug.includes("beetroot"))
+    return "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=200&q=70";
+  if (slug.includes("mint"))
+    return "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=200&q=70";
+  return "https://images.unsplash.com/photo-1501173727994-04cbcb2e3af1?w=200&q=70";
+}
 
 declare global {
   interface Window {
-    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
+    Razorpay: new (options: Record<string, unknown>) => {
+      open: () => void;
+      on: (event: string, handler: (response: unknown) => void) => void;
+    };
   }
 }
 
-interface RazorpayOptions {
-  key: string; amount: number; currency: string;
-  name: string; description: string; order_id: string;
-  handler: (response: RazorpayResponse) => void;
-  prefill: { name: string; email: string; contact: string };
-  theme: { color: string };
-  modal?: { ondismiss?: () => void };
-}
-interface RazorpayInstance { open: () => void }
-interface RazorpayResponse {
-  razorpay_payment_id: string;
-  razorpay_order_id: string;
-  razorpay_signature: string;
-}
+const inputCls =
+  "w-full border border-edge rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors bg-white";
+const labelCls = "block text-xs font-bold text-ink-2 mb-1.5 uppercase tracking-wide";
 
 export default function CheckoutPage() {
+  const { state, getSubtotal, clearCart } = useCart();
   const router = useRouter();
-  const { state, getSubtotal, clearCart, removeItem, updateQuantity } = useCart();
   const { items } = state;
 
-  const [loading, setLoading] = useState(false);
-  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
-  const [couponInput, setCouponInput] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
-  const [couponError, setCouponError] = useState<string>("");
-  const [formData, setFormData] = useState({
-    fullName: "", phone: "", email: "",
-    address: "", city: "", state: "", pincode: "",
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [step, setStep] = useState<1 | 2>(1);
+  const [savedFormData, setSavedFormData] = useState<CheckoutFormData | null>(null);
+  const [selectedGift, setSelectedGift] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const subtotal = getSubtotal();
-  const addOnsTotal = selectedAddOns.reduce((sum, id) => {
-    const addon = addOns.find((a) => a.id === id);
-    return sum + (addon?.price || 0);
-  }, 0);
-  const preDiscountTotal = subtotal + addOnsTotal;
-  const couponDiscount = appliedCoupon
-    ? applyCoupon(appliedCoupon.code, preDiscountTotal).discount
-    : 0;
-  const total = Math.max(0, preDiscountTotal - couponDiscount);
+  const total = subtotal;
+  const giftUnlocked = subtotal >= FREE_GIFT_THRESHOLD;
+  const amountToGift = FREE_GIFT_THRESHOLD - subtotal;
 
-  const handleApplyCoupon = () => {
-    const result = applyCoupon(couponInput, preDiscountTotal);
-    if (!result.valid || !result.coupon) {
-      setAppliedCoupon(null);
-      setCouponError(result.error || "Invalid coupon");
-      return;
-    }
-    setAppliedCoupon(result.coupon);
-    setCouponError("");
-  };
+  const { register, handleSubmit, formState: { errors } } = useForm<CheckoutFormData>();
 
-  const handleRemoveCoupon = () => {
-    setAppliedCoupon(null);
-    setCouponInput("");
-    setCouponError("");
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
-
-  const toggleAddOn = (id: string) => {
-    setSelectedAddOns((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
-  };
-
-  const validateForm = () => {
-    const e: Record<string, string> = {};
-    if (!formData.fullName.trim()) e.fullName = "Name is required";
-    if (!formData.phone.trim()) e.phone = "Phone is required";
-    else if (!/^\d{10}$/.test(formData.phone.replace(/\D/g, ""))) e.phone = "Enter valid 10-digit number";
-    if (!formData.email.trim()) e.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) e.email = "Enter valid email";
-    if (!formData.address.trim()) e.address = "Address is required";
-    if (!formData.city.trim()) e.city = "City is required";
-    if (!formData.state) e.state = "State is required";
-    if (!formData.pincode.trim()) e.pincode = "Pincode is required";
-    else if (!/^\d{6}$/.test(formData.pincode.replace(/\D/g, ""))) e.pincode = "Enter valid 6-digit pincode";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const loadRazorpay = () => new Promise<boolean>((resolve) => {
-    if (typeof window.Razorpay !== "undefined") { resolve(true); return; }
+  useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
+    script.async = true;
     document.body.appendChild(script);
-  });
+    return () => { if (document.body.contains(script)) document.body.removeChild(script); };
+  }, []);
 
-  const handlePayment = async () => {
-    if (!validateForm()) return;
-    if (items.length === 0) { alert("Your cart is empty"); return; }
-    setLoading(true);
+  // Clear gift selection if cart drops below threshold
+  useEffect(() => {
+    if (!giftUnlocked) setSelectedGift(null);
+  }, [giftUnlocked]);
+
+  const buildOrderItems = () => [
+    ...items.map((item) => ({
+      productId: item.product.id,
+      productName: item.product.name,
+      quantity: item.quantity,
+      price: item.product.price + (item.variant?.additionalPrice ?? 0),
+      variant: item.variant?.name,
+      sku: item.product.sku,
+    })),
+    ...(giftUnlocked && selectedGift
+      ? [{
+          productId: `gift-${selectedGift}`,
+          productName: `Free Gift: ${FREE_GIFTS.find((g) => g.id === selectedGift)?.name}`,
+          quantity: 1,
+          price: 0,
+          variant: undefined,
+          sku: `GIFT-${selectedGift.toUpperCase()}`,
+        }]
+      : []),
+  ];
+
+  const onStep1Submit = (data: CheckoutFormData) => {
+    setSavedFormData(data);
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handlePayOnline = async () => {
+    if (!savedFormData || items.length === 0) return;
+    setIsLoading(true);
     try {
-      const orderItems = items.map((item) => ({
-        productId: item.product.id, productName: item.product.name,
-        quantity: item.quantity, price: item.product.price,
-        variant: item.variant?.name, sku: item.product.sku,
-      }));
-      selectedAddOns.forEach((id) => {
-        const addon = addOns.find((a) => a.id === id);
-        if (addon) orderItems.push({
-          productId: addon.id, productName: addon.name, quantity: 1,
-          price: addon.price, variant: undefined, sku: `ADDON-${addon.id.toUpperCase()}`,
-        });
-      });
-      const res = await fetch("/api/payment", {
+      const orderRes = await fetch("/api/payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: total, items: orderItems, shippingAddress: { ...formData, country: "India" } }),
+        body: JSON.stringify({
+          items: buildOrderItems(),
+          shippingAddress: { ...savedFormData, country: "India" },
+          amount: total,
+          freeGift: giftUnlocked && selectedGift ? selectedGift : null,
+        }),
       });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || "Failed to create order");
-      const loaded = await loadRazorpay();
-      if (!loaded) throw new Error("Failed to load payment gateway");
-      const options: RazorpayOptions = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
-        amount: total * 100, currency: "INR",
-        name: "ARA Skincare", description: "Cold Therapy Products",
-        order_id: data.razorpayOrderId,
-        handler: async (response: RazorpayResponse) => {
+      if (!orderRes.ok) throw new Error("Failed to create order");
+      const orderData = await orderRes.json();
+
+      const rzp = new window.Razorpay({
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: orderData.amount,
+        currency: "INR",
+        name: "ARA Cold Therapy",
+        description: "Cold Therapy Products",
+        order_id: orderData.razorpayOrderId,
+        prefill: {
+          name: savedFormData.fullName,
+          email: savedFormData.email,
+          contact: savedFormData.phone,
+        },
+        theme: { color: "#7c3aed" },
+        handler: async (response: unknown) => {
+          const rzpRes = response as {
+            razorpay_payment_id: string;
+            razorpay_order_id: string;
+            razorpay_signature: string;
+          };
           const verifyRes = await fetch("/api/payment/verify", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderId: data.orderId, ...response }),
+            body: JSON.stringify({
+              razorpay_payment_id: rzpRes.razorpay_payment_id,
+              razorpay_order_id: rzpRes.razorpay_order_id,
+              razorpay_signature: rzpRes.razorpay_signature,
+              internalOrderId: orderData.orderId,
+            }),
           });
-          const verifyData = await verifyRes.json();
-          if (verifyData.success) { clearCart(); router.push(`/track?order=${data.orderNumber}`); }
-          else alert("Payment verification failed. Please contact support.");
+          if (verifyRes.ok) {
+            clearCart();
+            router.push(`/track?order=${orderData.orderNumber}`);
+          }
         },
-        prefill: { name: formData.fullName, email: formData.email, contact: formData.phone },
-        theme: { color: "#7c3aed" },
-        modal: { ondismiss: () => setLoading(false) },
-      };
-      new window.Razorpay(options).open();
-    } catch (error) {
-      console.error("Payment error:", error);
-      alert("Something went wrong. Please try again.");
+      });
+      rzp.open();
+    } catch (err) {
+      console.error("Online payment error:", err);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
+    }
+  };
+
+  const handleCOD = async () => {
+    if (!savedFormData || items.length === 0) return;
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/orders/cod", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: buildOrderItems(),
+          shippingAddress: { ...savedFormData, country: "India" },
+          amount: total,
+          freeGift: giftUnlocked && selectedGift ? selectedGift : null,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to place COD order");
+      const data = await res.json();
+      clearCart();
+      router.push(`/track?order=${data.orderNumber}`);
+    } catch (err) {
+      console.error("COD order error:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   if (items.length === 0) {
     return (
-      <div className="bg-white min-h-screen flex flex-col items-center justify-center p-8 text-center">
-        <div className="text-7xl md:text-9xl mb-7">🧊</div>
-        <h1 className="font-serif text-3xl md:text-4xl text-[#0f0a1e] mb-4">Your cart is empty</h1>
-        <p className="text-base md:text-lg text-[#6b7280] mb-8">Add some products to get started</p>
-        <Link href="/products" className="btn-primary">Shop Now</Link>
+      <div className="min-h-screen bg-paper flex items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-4xl mb-4">🛒</p>
+          <h2 className="text-2xl font-black text-ink mb-2">Your cart is empty</h2>
+          <p className="text-ink-muted mb-6">Add some products before checking out.</p>
+          <a href="/products" className="bg-brand text-white rounded-2xl px-8 py-3.5 font-semibold text-sm hover:bg-brand-hover transition-colors inline-block">
+            Shop Now
+          </a>
+        </div>
       </div>
     );
   }
 
-  const inputClass = (field: string) =>
-    `input${errors[field] ? " !border-[#dc2626]" : ""}`;
-
-  const trustItems = [
-    { icon: <Truck size={18} />,     label: "Free Shipping" },
-    { icon: <RotateCcw size={18} />, label: "30-Day Returns" },
-    { icon: <Shield size={18} />,    label: "Secure Pay" },
-  ];
-
   return (
-    <div className="bg-[#faf8ff] min-h-screen">
-      {/* Top bar */}
-      <div className="sticky top-0 z-20 bg-white border-b border-[rgba(124,58,237,0.1)] shadow-[0_1px_8px_rgba(124,58,237,0.06)] px-5 md:px-10 lg:px-16 py-5">
-        <div className="flex items-center gap-4 max-w-[1400px] mx-auto">
-          <Link href="/products" className="text-[#9ca3af] hover:text-[#7c3aed] transition-colors">
-            <ArrowLeft size={22} />
-          </Link>
-          <h1 className="font-serif text-xl md:text-2xl text-[#0f0a1e]">Checkout</h1>
-        </div>
-      </div>
+    <div className="min-h-screen bg-paper">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-      <div className=" px-5 py-10 md:px-10 md:py-14 lg:px-16 lg:py-16">
-        
-        <div className="flex flex-col lg:flex-row gap-10 lg:gap-14 items-center justify-center">
-
-          {/* ── Left — Form ─────────────────────────────────────── */}
-          <div className="flex-1 lg:max-w-xl order-2 lg:order-1">
-            <br />
-            <div className="bg-white border border-[rgba(124,58,237,0.1)] rounded-2xl p-7 md:p-9 shadow-[0_2px_16px_rgba(124,58,237,0.06)]">
-              <h2 className="font-mono text-[13px] tracking-[0.18em] uppercase text-[#7c3aed] mb-6 font-semibold">
-                Delivery Details
-              </h2>
-
-              <div className="space-y-5">
-                <div>
-                  <label className="block font-mono text-[11px] tracking-[0.16em] uppercase text-[#6b7280] mb-2 font-medium">Full Name *</label>
-                  <input type="text" name="fullName" value={formData.fullName} onChange={handleChange}
-                    className={inputClass("fullName")} placeholder="Your full name" />
-                  {errors.fullName && <p className="text-sm text-[#dc2626] mt-1.5">{errors.fullName}</p>}
-                </div>
-
-                <div className="grid grid-cols-2 gap-5">
-                  <div>
-                    <label className="block font-mono text-[11px] tracking-[0.16em] uppercase text-[#6b7280] mb-2 font-medium">Phone *</label>
-                    <input type="tel" name="phone" value={formData.phone} onChange={handleChange}
-                      className={inputClass("phone")} placeholder="10-digit mobile" />
-                    {errors.phone && <p className="text-sm text-[#dc2626] mt-1.5">{errors.phone}</p>}
-                  </div>
-                  <div>
-                    <label className="block font-mono text-[11px] tracking-[0.16em] uppercase text-[#6b7280] mb-2 font-medium">Email *</label>
-                    <input type="email" name="email" value={formData.email} onChange={handleChange}
-                      className={inputClass("email")} placeholder="your@email.com" />
-                    {errors.email && <p className="text-sm text-[#dc2626] mt-1.5">{errors.email}</p>}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-mono text-[11px] tracking-[0.16em] uppercase text-[#6b7280] mb-2 font-medium">Address *</label>
-                  <input type="text" name="address" value={formData.address} onChange={handleChange}
-                    className={inputClass("address")} placeholder="House/Flat, Street, Area" />
-                  {errors.address && <p className="text-sm text-[#dc2626] mt-1.5">{errors.address}</p>}
-                </div>
-
-                <div className="grid grid-cols-2 gap-5">
-                  <div>
-                    <label className="block font-mono text-[11px] tracking-[0.16em] uppercase text-[#6b7280] mb-2 font-medium">City *</label>
-                    <input type="text" name="city" value={formData.city} onChange={handleChange}
-                      className={inputClass("city")} placeholder="City" />
-                    {errors.city && <p className="text-sm text-[#dc2626] mt-1.5">{errors.city}</p>}
-                  </div>
-                  <div>
-                    <label className="block font-mono text-[11px] tracking-[0.16em] uppercase text-[#6b7280] mb-2 font-medium">PIN Code *</label>
-                    <input type="text" name="pincode" value={formData.pincode} onChange={handleChange}
-                      className={inputClass("pincode")} placeholder="6-digit PIN" />
-                    {errors.pincode && <p className="text-sm text-[#dc2626] mt-1.5">{errors.pincode}</p>}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-mono text-[11px] tracking-[0.16em] uppercase text-[#6b7280] mb-2 font-medium">State *</label>
-                  <select name="state" value={formData.state} onChange={handleChange} className={inputClass("state")}>
-                    <option value="">Select State</option>
-                    {indianStates.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                  {errors.state && <p className="text-sm text-[#dc2626] mt-1.5">{errors.state}</p>}
-                </div>
-              </div>
-
-              {/* Trust row */}
-              <div className="grid grid-cols-3 divide-x divide-[rgba(124,58,237,0.1)] border border-[rgba(124,58,237,0.1)] rounded-xl overflow-hidden mt-8">
-                {trustItems.map(({ icon, label }) => (
-                  <div key={label} className="bg-[#faf8ff] py-4 px-2 text-center">
-                    <div className="flex justify-center mb-1.5 text-[#7c3aed]">{icon}</div>
-                    <p className="font-mono text-[11px] tracking-[0.1em] uppercase text-[#6b7280] font-medium">{label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+        {/* Step Indicator */}
+        <div className="flex items-center gap-3 mb-8">
+          <div className={`flex items-center gap-2 text-sm font-bold ${step === 1 ? "text-brand" : "text-green-600"}`}>
+            {step === 2 ? (
+              <CheckCircle2 className="w-5 h-5" />
+            ) : (
+              <span className="w-6 h-6 rounded-full bg-brand text-white text-xs flex items-center justify-center font-black">1</span>
+            )}
+            Delivery Details
           </div>
+          <ChevronRight className="w-4 h-4 text-ink-muted" />
+          <div className={`flex items-center gap-2 text-sm font-bold ${step === 2 ? "text-brand" : "text-ink-muted"}`}>
+            <span className={`w-6 h-6 rounded-full text-xs flex items-center justify-center font-black ${step === 2 ? "bg-brand text-white" : "bg-edge text-ink-muted"}`}>2</span>
+            Payment
+          </div>
+        </div>
 
-          {/* ── Right — Order Summary ─────────────────────────── */}
-          <div className="lg:w-[420px] xl:w-[460px] order-1 lg:order-2"><br />
-            <div className="lg:sticky lg:top-28 bg-white border border-[rgba(124,58,237,0.1)] rounded-2xl p-7 shadow-[0_2px_16px_rgba(124,58,237,0.06)]">
-              <h2 className="font-mono text-[13px] tracking-[0.18em] uppercase text-[#7c3aed] mb-5 font-semibold">
-                Order Summary
-              </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          {/* Left */}
+          <div className="lg:col-span-3 flex flex-col gap-5">
 
-              {/* Cart items */}
-              <div className="space-y-3.5 mb-6">
-                {items.map((item) => (
-                  <div key={getItemKey(item)} className="flex gap-3.5 p-4 bg-[#faf8ff] border border-[rgba(124,58,237,0.08)] rounded-xl">
-                    <div className="w-16 h-16 bg-[#f5f3ff] rounded-lg flex items-center justify-center text-2xl shrink-0">
-                      🧊
+            {/* ── STEP 1 ── */}
+            {step === 1 && (
+              <form onSubmit={handleSubmit(onStep1Submit)} className="flex flex-col gap-5">
+                <div className="bg-white rounded-2xl border border-edge p-6">
+                  <h2 className="font-bold text-lg text-ink mb-5 flex items-center gap-2">
+                    <Truck className="w-5 h-5 text-brand" />
+                    Delivery Details
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className={labelCls}>Full Name *</label>
+                      <input {...register("fullName", { required: "Full name is required" })} className={inputCls} placeholder="Priya Sharma" />
+                      {errors.fullName && <p className="text-xs text-red-500 mt-1">{errors.fullName.message}</p>}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <div className="min-w-0">
-                          <p className="text-[15px] font-medium text-[#0f0a1e] truncate">{item.product.name}</p>
-                          {item.variant && <p className="text-sm text-[#6b7280] mt-0.5">{item.variant.name}</p>}
-                        </div>
-                        <button onClick={() => removeItem(item.product.id, item.variant?.id)}
-                          className="text-[#9ca3af] hover:text-[#dc2626] p-1.5 rounded transition-colors shrink-0">
-                          <X size={16} />
-                        </button>
-                      </div>
-                      <div className="flex justify-between items-center mt-2.5">
-                        <div className="flex items-center border border-[rgba(124,58,237,0.2)] rounded-lg overflow-hidden">
-                          <button onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.variant?.id)}
-                            className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f5f3ff] hover:text-[#7c3aed] transition-colors">
-                            <Minus size={12} />
-                          </button>
-                          <span className="w-8 text-center text-sm font-mono font-medium text-[#0f0a1e]">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.variant?.id)}
-                            className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f5f3ff] hover:text-[#7c3aed] transition-colors">
-                            <Plus size={12} />
-                          </button>
-                        </div>
-                        <span className="font-semibold text-[#0f0a1e] text-base">{formatPrice(item.product.price * item.quantity)}</span>
-                      </div>
+                    <div>
+                      <label className={labelCls}>Phone *</label>
+                      <input {...register("phone", { required: "Phone is required", pattern: { value: /^[6-9]\d{9}$/, message: "Enter a valid 10-digit number" } })} className={inputCls} placeholder="9876543210" maxLength={10} />
+                      {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone.message}</p>}
+                    </div>
+                    <div>
+                      <label className={labelCls}>Email *</label>
+                      <input {...register("email", { required: "Email is required", pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Enter a valid email" } })} type="email" className={inputCls} placeholder="priya@example.com" />
+                      {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className={labelCls}>Address *</label>
+                      <input {...register("address", { required: "Address is required" })} className={inputCls} placeholder="Flat 12, Building Name, Street" />
+                      {errors.address && <p className="text-xs text-red-500 mt-1">{errors.address.message}</p>}
+                    </div>
+                    <div>
+                      <label className={labelCls}>City *</label>
+                      <input {...register("city", { required: "City is required" })} className={inputCls} placeholder="Mumbai" />
+                      {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city.message}</p>}
+                    </div>
+                    <div>
+                      <label className={labelCls}>State *</label>
+                      <select {...register("state", { required: "State is required" })} className={inputCls}>
+                        <option value="">Select State</option>
+                        {indianStates.map((s) => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                      {errors.state && <p className="text-xs text-red-500 mt-1">{errors.state.message}</p>}
+                    </div>
+                    <div>
+                      <label className={labelCls}>Pincode *</label>
+                      <input {...register("pincode", { required: "Pincode is required", pattern: { value: /^\d{6}$/, message: "Enter a valid 6-digit pincode" } })} className={inputCls} placeholder="400001" maxLength={6} />
+                      {errors.pincode && <p className="text-xs text-red-500 mt-1">{errors.pincode.message}</p>}
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
 
-              {/* Add-ons */}
-              {/* <div className="mb-6">
-                <h3 className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#9ca3af] mb-3 font-medium">Add to Your Order</h3>
-                <div className="space-y-2.5">
-                  {addOns.slice(0, 2).map((addon) => {
-                    const isSelected = selectedAddOns.includes(addon.id);
-                    return (
-                      <div key={addon.id} onClick={() => toggleAddOn(addon.id)}
-                        className={`flex items-center gap-3 p-3.5 border rounded-xl cursor-pointer transition-all ${
-                          isSelected
-                            ? "bg-[#faf8ff] border-[#7c3aed] shadow-[0_0_0_2px_rgba(124,58,237,0.08)]"
-                            : "bg-white border-[rgba(124,58,237,0.12)] hover:border-[rgba(124,58,237,0.28)]"
-                        }`}>
-                        <div className={`w-5 h-5 rounded-md border flex items-center justify-center text-xs shrink-0 transition-all ${
-                          isSelected ? "bg-[#7c3aed] border-[#7c3aed] text-white" : "border-[rgba(124,58,237,0.25)]"
-                        }`}>
-                          {isSelected && "✓"}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[14px] font-medium text-[#0f0a1e] truncate">{addon.name}</p>
-                          <p className="text-sm text-[#6b7280]">
-                            {formatPrice(addon.price)}{" "}
-                            <span className="line-through text-[#9ca3af]">{formatPrice(addon.originalPrice)}</span>
-                          </p>
+                <button type="submit" className="w-full bg-brand text-white rounded-2xl px-6 py-4 font-bold text-base hover:bg-brand-hover transition-colors shadow-lg shadow-brand/25 flex items-center justify-center gap-2">
+                  Continue to Payment
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </form>
+            )}
+
+            {/* ── STEP 2 ── */}
+            {step === 2 && savedFormData && (
+              <>
+                {/* Address summary */}
+                <div className="bg-white rounded-2xl border border-edge p-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="font-bold text-sm text-ink flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-green-600" />
+                      Delivering to
+                    </h2>
+                    <button onClick={() => setStep(1)} className="text-xs text-brand font-semibold hover:underline">Edit</button>
+                  </div>
+                  <p className="text-sm font-semibold text-ink">{savedFormData.fullName}</p>
+                  <p className="text-sm text-ink-muted">{savedFormData.address}, {savedFormData.city}, {savedFormData.state} — {savedFormData.pincode}</p>
+                  <p className="text-sm text-ink-muted">{savedFormData.phone} · {savedFormData.email}</p>
+                </div>
+
+                {/* Payment */}
+                <div className="bg-white rounded-2xl border border-edge p-6">
+                  <h2 className="font-bold text-lg text-ink mb-5 flex items-center gap-2">
+                    <CreditCard className="w-5 h-5 text-brand" />
+                    Choose Payment Method
+                  </h2>
+                  <div className="flex flex-col gap-3">
+                    <button onClick={handlePayOnline} disabled={isLoading} className="w-full bg-brand text-white rounded-2xl px-6 py-4 font-bold text-base hover:bg-brand-hover transition-colors shadow-lg shadow-brand/25 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <CreditCard className="w-5 h-5 shrink-0" />
+                        <div className="text-left">
+                          <p className="font-bold text-sm">Pay Online</p>
+                          <p className="text-xs opacity-80">UPI · Cards · Netbanking · Wallets</p>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </div> */}
-
-              <div className="h-px bg-[rgba(124,58,237,0.08)] my-5" />
-
-              {/* Coupon */}
-              <div className="mb-6">
-                <h3 className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#9ca3af] mb-2.5 flex items-center gap-1.5 font-medium">
-                  <Tag size={13} /> Coupon Code
-                </h3>
-                {appliedCoupon ? (
-                  <div className="flex items-center justify-between p-3.5 bg-[#f0fdf4] border border-[#86efac] rounded-xl">
-                    <div className="min-w-0">
-                      <p className="text-[15px] font-semibold text-[#15803d]">{appliedCoupon.code}</p>
-                      {appliedCoupon.description && (
-                        <p className="text-sm text-[#15803d]/80 truncate">{appliedCoupon.description}</p>
-                      )}
-                    </div>
-                    <button
-                      onClick={handleRemoveCoupon}
-                      className="text-sm text-[#15803d] hover:text-[#dc2626] font-medium transition-colors shrink-0 ml-2"
-                    >
-                      Remove
+                      <div className="flex items-center gap-2">
+                        <span className="text-base font-black">{formatPrice(total)}</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </div>
+                    </button>
+                    <button onClick={handleCOD} disabled={isLoading} className="w-full bg-white border-2 border-edge text-ink rounded-2xl px-6 py-4 font-bold text-base hover:border-brand hover:text-brand transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <Banknote className="w-5 h-5 shrink-0" />
+                        <div className="text-left">
+                          <p className="font-bold text-sm">Cash on Delivery</p>
+                          <p className="text-xs text-ink-muted">Pay when your order arrives</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-base font-black">{formatPrice(total)}</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </div>
                     </button>
                   </div>
-                ) : (
-                  <div>
-                    <div className="flex gap-2.5">
-                      <input
-                        type="text"
-                        value={couponInput}
-                        onChange={(e) => { setCouponInput(e.target.value); setCouponError(""); }}
-                        placeholder="Enter coupon"
-                        className="input flex-1 uppercase tracking-wider"
-                      />
-                      <button
-                        onClick={handleApplyCoupon}
-                        type="button"
-                        className="btn-secondary px-5 whitespace-nowrap"
-                      >
-                        Apply
-                      </button>
+                  {isLoading && (
+                    <div className="flex items-center justify-center gap-2 mt-4 text-sm text-ink-muted">
+                      <span className="w-4 h-4 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
+                      Processing your order…
                     </div>
-                    {couponError && (
-                      <p className="text-sm text-[#dc2626] mt-2">{couponError}</p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="h-px bg-[rgba(124,58,237,0.08)] my-5" />
-
-              {/* Totals */}
-              <div className="space-y-2.5 mb-6">
-                <div className="flex justify-between text-[15px]">
-                  <span className="text-[#6b7280]">Subtotal</span>
-                  <span className="font-medium text-[#0f0a1e]">{formatPrice(subtotal)}</span>
+                  )}
                 </div>
-                {addOnsTotal > 0 && (
-                  <div className="flex justify-between text-[15px]">
-                    <span className="text-[#6b7280]">Add-ons</span>
-                    <span className="font-medium text-[#0f0a1e]">{formatPrice(addOnsTotal)}</span>
-                  </div>
-                )}
-                {couponDiscount > 0 && (
-                  <div className="flex justify-between text-[15px]">
-                    <span className="text-[#15803d]">Discount ({appliedCoupon?.code})</span>
-                    <span className="text-[#15803d] font-medium">−{formatPrice(couponDiscount)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-[15px]">
-                  <span className="text-[#6b7280]">Shipping</span>
-                  <span className="text-[#7c3aed] font-semibold">FREE</span>
-                </div>
-                <div className="h-px bg-[rgba(124,58,237,0.08)] my-1" />
-                <div className="flex justify-between items-center pt-1">
-                  <span className="font-semibold text-[#0f0a1e] text-base">Total</span>
-                  <span className="font-serif text-3xl font-light text-[#0f0a1e]">{formatPrice(total)}</span>
-                </div>
-              </div>
 
-              {/* Pay button */}
-              <button onClick={handlePayment} disabled={loading}
-                className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50">
-                <Lock size={16} />
-                {loading ? "Processing..." : `Pay Securely — ${formatPrice(total)}`}
-              </button>
-              <p className="text-center text-sm text-[#9ca3af] mt-3.5 leading-relaxed">
-                Secured by Razorpay · 30-day returns · Your data is safe
-              </p>
-            </div>
+                <p className="text-xs text-ink-muted text-center">
+                  <ShieldCheck className="w-3.5 h-3.5 inline mr-1 text-green-500" />
+                  Secured by Razorpay · SSL Encrypted · 30-Day Returns
+                </p>
+              </>
+            )}
           </div>
 
+          {/* Right: Order Summary */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-2xl border border-edge p-6 sticky top-24 flex flex-col gap-5">
+              <h2 className="font-bold text-base text-ink">Order Summary</h2>
+
+              {/* Items */}
+              <ul className="flex flex-col gap-4 pb-5 border-b border-edge">
+                {items.map((item) => {
+                  const itemPrice = item.product.price + (item.variant?.additionalPrice ?? 0);
+                  return (
+                    <li key={`${item.product.id}__${item.variant?.id ?? "default"}`} className="flex items-start gap-3">
+                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-paper shrink-0 relative border border-edge">
+                        <Image src={getProductImage(item.product.slug)} alt={item.product.name} fill unoptimized className="object-cover" />
+                        <span className="absolute -top-1.5 -right-1.5 bg-brand text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{item.quantity}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-ink truncate">{item.product.name}</p>
+                        {item.variant && <p className="text-xs text-ink-muted">{item.variant.name}</p>}
+                      </div>
+                      <span className="text-sm font-bold text-ink shrink-0">{formatPrice(itemPrice * item.quantity)}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {/* Free Gift Section */}
+              <div>
+                {giftUnlocked ? (
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Gift className="w-4 h-4 text-brand" />
+                      <p className="text-sm font-bold text-ink">Choose your free gift</p>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {FREE_GIFTS.map((gift) => (
+                        <button
+                          key={gift.id}
+                          type="button"
+                          onClick={() => setSelectedGift(selectedGift === gift.id ? null : gift.id)}
+                          className={`flex items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-left transition-colors ${
+                            selectedGift === gift.id
+                              ? "border-brand bg-brand/5"
+                              : "border-edge hover:border-brand/40"
+                          }`}
+                        >
+                          <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-paper">
+                            <Image src={gift.image} alt={gift.name} fill className="object-cover" sizes="40px" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-ink">{gift.name}</p>
+                            <p className="text-xs text-green-600 font-bold">FREE</p>
+                          </div>
+                          <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${selectedGift === gift.id ? "border-brand bg-brand" : "border-edge"}`}>
+                            {selectedGift === gift.id && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    {!selectedGift && (
+                      <p className="text-xs text-ink-muted mt-2">Tap a gift above to select it</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-brand/40 bg-brand/5 px-4 py-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Gift className="w-4 h-4 text-brand" />
+                      <p className="text-sm font-bold text-brand">Unlock a free gift!</p>
+                    </div>
+                    <p className="text-xs text-ink-2 leading-relaxed">
+                      Add <span className="font-bold text-ink">{formatPrice(amountToGift)}</span> more to choose a free gift — Ice Roller, Face Wash Brush, or Hair Scalp Massager.
+                    </p>
+                    <div className="mt-2 h-1.5 rounded-full bg-brand/15 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-brand transition-all duration-500"
+                        style={{ width: `${Math.min((subtotal / FREE_GIFT_THRESHOLD) * 100, 100)}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-ink-muted mt-1">{formatPrice(subtotal)} / {formatPrice(FREE_GIFT_THRESHOLD)}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Totals */}
+              <div className="flex flex-col gap-2.5 text-sm pt-1 border-t border-edge">
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Subtotal</span>
+                  <span className="font-semibold text-ink">{formatPrice(subtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Shipping</span>
+                  <span className="font-semibold text-green-600">Free</span>
+                </div>
+                {giftUnlocked && selectedGift && (
+                  <div className="flex justify-between">
+                    <span className="text-ink-muted flex items-center gap-1"><Gift className="w-3.5 h-3.5 text-brand" />{FREE_GIFTS.find((g) => g.id === selectedGift)?.name}</span>
+                    <span className="font-semibold text-green-600">Free</span>
+                  </div>
+                )}
+                <div className="flex justify-between pt-3 border-t border-edge">
+                  <span className="font-black text-base text-ink">Total</span>
+                  <span className="font-black text-base text-ink">{formatPrice(total)}</span>
+                </div>
+              </div>
+
+              {/* Trust */}
+              <div className="flex flex-col gap-2 pt-1 border-t border-edge">
+                <div className="flex items-center gap-2 text-xs text-ink-muted">
+                  <ShieldCheck className="w-4 h-4 text-green-500 shrink-0" />
+                  Payments secured by Razorpay
+                </div>
+                <div className="flex items-center gap-2 text-xs text-ink-muted">
+                  <Truck className="w-4 h-4 text-brand shrink-0" />
+                  Free shipping · Delivered in 3–5 business days
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
