@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Marquee from "react-fast-marquee";
 import { Star } from "lucide-react";
 
@@ -43,18 +42,7 @@ function ReviewCard({ review }: { review: Review }) {
       </p>
 
       {/* Author */}
-      <div className="flex items-center gap-3">
-        <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0 bg-brand/10">
-          <Image
-            src={review.avatar}
-            alt={review.author}
-            fill
-            className="object-cover"
-            sizes="36px"
-          />
-        </div>
-        <p className="text-sm font-bold text-ink">{review.author}</p>
-      </div>
+      <p className="text-sm font-bold text-ink text-center">{review.author}</p>
     </div>
   );
 }

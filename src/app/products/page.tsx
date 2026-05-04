@@ -1,9 +1,19 @@
+"use client";
+
+import { useState } from "react";
 import { products } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
 
 const CATEGORIES = ["All", "Cold Therapy", "Powders", "Combos"];
 
 export default function ProductsPage() {
+  const [activeCategory, setActiveCategory] = useState("All");
+
+  const filtered =
+    activeCategory === "All"
+      ? products
+      : products.filter((p) => p.category === activeCategory);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Page Header */}
@@ -23,26 +33,29 @@ export default function ProductsPage() {
         </div>
       </div>
 
+
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Filter Chips */}
         <div className="flex flex-wrap gap-2 mb-10">
-          {CATEGORIES.map((cat, i) => (
-            <span
+          {CATEGORIES.map((cat) => (
+            <button
               key={cat}
+              onClick={() => setActiveCategory(cat)}
               className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-colors ${
-                i === 0
+                activeCategory === cat
                   ? "bg-brand text-white"
                   : "bg-paper text-ink-2 border border-edge hover:border-brand hover:text-brand"
               }`}
             >
               {cat}
-            </span>
+            </button>
           ))}
         </div>
 
         {/* Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {products.map((product) => (
+          {filtered.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

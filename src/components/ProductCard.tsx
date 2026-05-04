@@ -59,34 +59,12 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         </div>
 
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-          {discount > 0 && (
-            <span className="bg-brand text-white text-xs font-bold px-2.5 py-1 rounded-full">
-              -{discount}%
-            </span>
-          )}
-          {product.badges.slice(0, 1).map((badge) => (
-            <span
-              key={badge}
-              className="bg-ink text-white text-xs font-bold px-2.5 py-1 rounded-full"
-            >
-              {badge}
-            </span>
-          ))}
-        </div>
-
-        {/* Stock warning */}
-        {product.stock <= 20 && product.stock > 0 && (
-          <div className="absolute top-3 right-3">
-            <span className="bg-orange-50 text-orange-600 text-xs font-semibold px-2 py-1 rounded-full border border-orange-200">
-              Only {product.stock} left
-            </span>
-          </div>
-        )}
       </Link>
 
       {/* Info */}
+
+
+      
       <div className="p-4">
         <p className="text-xs font-bold text-ink-muted tracking-widest uppercase mb-1.5">
           {product.category}

@@ -212,12 +212,7 @@ export default function ProductView({ product }: ProductViewProps) {
 
           {/* Guarantee Chips */}
           <div className="flex flex-wrap gap-3 mb-6 pb-6 border-b border-edge">
-            <div className="flex items-center gap-2 bg-paper rounded-full px-4 py-2">
-              <ShieldCheck className="w-4 h-4 text-brand" />
-              <span className="text-xs font-semibold text-ink-2">
-                Dermatologist Tested
-              </span>
-            </div>
+            
             <div className="flex items-center gap-2 bg-paper rounded-full px-4 py-2">
               <Leaf className="w-4 h-4 text-green-600" />
               <span className="text-xs font-semibold text-ink-2">

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 const messages = [
   "Free Shipping on All Orders Across India",
-  "Cold Therapy · Made in India · Dermatologist Approved",
+  "Cold Therapy · Made in India",
   "Use Code WELCOME15 for 15% Off Your First Order",
 ];
 
