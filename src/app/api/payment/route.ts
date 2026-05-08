@@ -44,8 +44,8 @@ export async function POST(request: NextRequest) {
       orderStatus: "pending",
     });
 
-    // Sync to Google Sheets (non-blocking)
-    await appendOrderToSheet({
+    // Sync to Google Sheets (non-blocking — failure must not break order creation)
+    try { await appendOrderToSheet({
       orderNumber,
       date: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
       fullName: shippingAddress.fullName,
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       paymentMethod: "Razorpay",
       paymentStatus: "pending",
       orderStatus: "pending",
-    });
+    }); } catch (sheetsErr) { console.error("Sheets sync failed:", sheetsErr); }
 
     return NextResponse.json({
       success: true,

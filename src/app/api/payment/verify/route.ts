@@ -3,6 +3,7 @@ import { verifyPaymentSignature } from "@/lib/razorpay";
 import { updateOrder, getOrderById } from "@/lib/db";
 import { createDelhiveryShipment } from "@/lib/delhivery";
 import { updateSheetPaymentStatus } from "@/lib/sheets";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,9 +34,10 @@ export async function POST(request: NextRequest) {
       orderStatus: "confirmed",
     });
 
-    // Update Google Sheet status
+    // Update Google Sheet status (non-blocking)
     if (existingOrder?.orderNumber) {
-      await updateSheetPaymentStatus(existingOrder.orderNumber, "paid", "confirmed");
+      try { await updateSheetPaymentStatus(existingOrder.orderNumber, "paid", "confirmed"); }
+      catch (sheetsErr) { console.error("Sheets update failed:", sheetsErr); }
     }
 
     if (!updatedOrder) {
@@ -46,27 +48,50 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Delhivery shipment (auto-ship)
+    let awbCode: string | undefined;
+    let courierName: string | undefined;
     try {
       const delhiveryResponse = await createDelhiveryShipment(updatedOrder);
       const pkg = delhiveryResponse.packages[0];
-
+      awbCode = pkg.waybill || undefined;
+      courierName = "Delhivery";
       await updateOrder(orderId, {
         delhiveryOrderRef: pkg.refnum,
-        awbCode: pkg.waybill,
-        courierName: "Delhivery",
-        trackingUrl: `https://www.delhivery.com/track/package/${pkg.waybill}`,
-        orderStatus: pkg.waybill ? "processing" : "confirmed",
+        awbCode,
+        courierName,
+        trackingUrl: awbCode ? `https://www.delhivery.com/track/package/${awbCode}` : undefined,
+        orderStatus: awbCode ? "processing" : "confirmed",
       });
     } catch (delhiveryError) {
-      // Log but don't fail the payment verification
       console.error("Delhivery shipment creation failed:", delhiveryError);
-      // Order is still confirmed, can be manually pushed to Delhivery later
+    }
+
+    // Send order confirmation email
+    if (updatedOrder) {
+      try {
+        const addr = updatedOrder.shippingAddress;
+        await sendOrderConfirmationEmail({
+          orderNumber: updatedOrder.orderNumber,
+          customerName: addr.fullName,
+          email: addr.email,
+          items: updatedOrder.items,
+          subtotal: updatedOrder.subtotal,
+          total: updatedOrder.total,
+          paymentMethod: "online",
+          shippingAddress: addr,
+          awbCode,
+          courierName,
+        });
+      } catch (emailError) {
+        console.error("Order confirmation email failed:", emailError);
+      }
     }
 
     return NextResponse.json({
       success: true,
-      message: "Payment verified successfully",
       orderId,
+      orderNumber: existingOrder?.orderNumber,
+      awbCode: awbCode ?? null,
     });
   } catch (error) {
     console.error("Payment verification error:", error);

@@ -10,6 +10,7 @@ import { indianStates } from "@/data/products";
 import { Gift, ShieldCheck, Truck, ChevronRight, CreditCard, Banknote, CheckCircle2 } from "lucide-react";
 
 const FREE_GIFT_THRESHOLD = 399;
+const COD_CHARGE = 29;
 
 const FREE_GIFTS = [
   {
@@ -76,6 +77,7 @@ export default function CheckoutPage() {
 
   const subtotal = getSubtotal();
   const total = subtotal;
+  const codTotal = subtotal + COD_CHARGE;
   const giftUnlocked = subtotal >= FREE_GIFT_THRESHOLD;
   const amountToGift = FREE_GIFT_THRESHOLD - subtotal;
 
@@ -164,12 +166,14 @@ export default function CheckoutPage() {
               razorpay_payment_id: rzpRes.razorpay_payment_id,
               razorpay_order_id: rzpRes.razorpay_order_id,
               razorpay_signature: rzpRes.razorpay_signature,
-              internalOrderId: orderData.orderId,
+              orderId: orderData.orderId,
             }),
           });
           if (verifyRes.ok) {
+            const verifyData = await verifyRes.json();
+            const trackId = verifyData.awbCode || verifyData.orderNumber || orderData.orderNumber;
             clearCart();
-            router.push(`/track?order=${orderData.orderNumber}`);
+            router.push(`/track?order=${encodeURIComponent(trackId)}`);
           }
         },
       });
@@ -191,14 +195,15 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           items: buildOrderItems(),
           shippingAddress: { ...savedFormData, country: "India" },
-          amount: total,
+          amount: codTotal,
           freeGift: giftUnlocked && selectedGift ? selectedGift : null,
         }),
       });
       if (!res.ok) throw new Error("Failed to place COD order");
       const data = await res.json();
+      const trackId = data.awbCode || data.orderNumber;
       clearCart();
-      router.push(`/track?order=${data.orderNumber}`);
+      router.push(`/track?order=${encodeURIComponent(trackId)}`);
     } catch (err) {
       console.error("COD order error:", err);
     } finally {
@@ -345,11 +350,11 @@ export default function CheckoutPage() {
                         <Banknote className="w-5 h-5 shrink-0" />
                         <div className="text-left">
                           <p className="font-bold text-sm">Cash on Delivery</p>
-                          <p className="text-xs text-ink-muted">Pay when your order arrives</p>
+                          <p className="text-xs text-ink-muted">Pay when your order arrives · +{formatPrice(COD_CHARGE)} COD fee</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-base font-black">{formatPrice(total)}</span>
+                        <span className="text-base font-black">{formatPrice(codTotal)}</span>
                         <ChevronRight className="w-4 h-4" />
                       </div>
                     </button>
@@ -466,6 +471,12 @@ export default function CheckoutPage() {
                   <div className="flex justify-between">
                     <span className="text-ink-muted flex items-center gap-1"><Gift className="w-3.5 h-3.5 text-brand" />{FREE_GIFTS.find((g) => g.id === selectedGift)?.name}</span>
                     <span className="font-semibold text-green-600">Free</span>
+                  </div>
+                )}
+                {step === 2 && (
+                  <div className="flex justify-between text-amber-700">
+                    <span className="flex items-center gap-1"><Banknote className="w-3.5 h-3.5" />COD fee</span>
+                    <span className="font-semibold">+{formatPrice(COD_CHARGE)}</span>
                   </div>
                 )}
                 <div className="flex justify-between pt-3 border-t border-edge">

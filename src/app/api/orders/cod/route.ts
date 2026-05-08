@@ -3,6 +3,7 @@ import { createOrder, updateOrder } from "@/lib/db";
 import { generateOrderNumber } from "@/lib/utils";
 import { appendOrderToSheet } from "@/lib/sheets";
 import { createDelhiveryShipment } from "@/lib/delhivery";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,22 +40,44 @@ export async function POST(request: NextRequest) {
     });
 
     // Create Delhivery shipment for COD
+    let awbCode: string | undefined;
+    let courierName: string | undefined;
     try {
       const delhiveryResponse = await createDelhiveryShipment(order);
       const pkg = delhiveryResponse.packages[0];
+      awbCode = pkg.waybill || undefined;
+      courierName = "Delhivery";
       await updateOrder(order._id.toString(), {
         delhiveryOrderRef: pkg.refnum,
-        awbCode: pkg.waybill,
-        courierName: "Delhivery",
-        trackingUrl: `https://www.delhivery.com/track/package/${pkg.waybill}`,
-        orderStatus: pkg.waybill ? "processing" : "confirmed",
+        awbCode,
+        courierName,
+        trackingUrl: awbCode ? `https://www.delhivery.com/track/package/${awbCode}` : undefined,
+        orderStatus: awbCode ? "processing" : "confirmed",
       });
     } catch (delhiveryError) {
       console.error("Delhivery COD shipment creation failed:", delhiveryError);
     }
 
-    // Sync to Google Sheets
-    await appendOrderToSheet({
+    // Send order confirmation email
+    try {
+      await sendOrderConfirmationEmail({
+        orderNumber,
+        customerName: shippingAddress.fullName,
+        email: shippingAddress.email,
+        items,
+        subtotal,
+        total: amount,
+        paymentMethod: "cod",
+        shippingAddress,
+        awbCode,
+        courierName,
+      });
+    } catch (emailError) {
+      console.error("Order confirmation email failed:", emailError);
+    }
+
+    // Sync to Google Sheets (non-blocking)
+    try { await appendOrderToSheet({
       orderNumber,
       date: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
       fullName: shippingAddress.fullName,
@@ -71,12 +94,13 @@ export async function POST(request: NextRequest) {
       paymentMethod: "COD",
       paymentStatus: "pending",
       orderStatus: "confirmed",
-    });
+    }); } catch (sheetsErr) { console.error("Sheets sync failed:", sheetsErr); }
 
     return NextResponse.json({
       success: true,
       orderId: order._id.toString(),
       orderNumber,
+      awbCode: awbCode ?? null,
     });
   } catch (error) {
     console.error("COD order error:", error);

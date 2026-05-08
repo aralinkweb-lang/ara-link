@@ -126,6 +126,11 @@ export async function updateOrderByNumber(orderNumber: string, updateData: Recor
   return await OrderModel.findOneAndUpdate({ orderNumber }, updateData, { new: true });
 }
 
+export async function getOrderByAwb(awbCode: string) {
+  await connectDB();
+  return await OrderModel.findOne({ awbCode });
+}
+
 export async function getOrdersByEmail(email: string) {
   await connectDB();
   return await OrderModel.find({ "shippingAddress.email": email }).sort({ createdAt: -1 });
