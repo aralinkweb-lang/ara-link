@@ -387,7 +387,7 @@ export default function CheckoutPage() {
                   return (
                     <li key={`${item.product.id}__${item.variant?.id ?? "default"}`} className="flex items-start gap-3">
                       <div className="w-14 h-14 rounded-xl overflow-hidden bg-paper shrink-0 relative border border-edge">
-                        <Image src={getProductImage(item.product.slug)} alt={item.product.name} fill unoptimized className="object-cover" />
+                        <Image src={item.product.slug.startsWith("combo-powder-kit") && item.product.images?.[0] ? item.product.images[0] : getProductImage(item.product.slug)} alt={item.product.name} fill unoptimized className="object-cover" />
                         <span className="absolute -top-1.5 -right-1.5 bg-brand text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{item.quantity}</span>
                       </div>
                       <div className="flex-1 min-w-0">
