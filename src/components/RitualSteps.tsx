@@ -2,10 +2,10 @@ import Image from "next/image";
 import { ritualSteps } from "@/data/products";
 
 const stepImages = [
-  "https://images.unsplash.com/photo-1548366086-7f1b76106622?w=400&q=80",
-  "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&q=80",
-  "https://images.unsplash.com/photo-1570194065650-d99fb4bedf0a?w=400&q=80",
-  "https://images.unsplash.com/photo-1576426863848-c21f53c60b19?w=400&q=80",
+  "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778868008/Generated_Image_May_15_2026_-_11_29PM_dszdqo.jpg",
+  "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778868312/71LOioJg-_L._SX522__afiiox.jpg",
+  "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778868651/Generated_Image_May_15_2026_-_11_39PM_hhoami.jpg",
+  "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778868553/hgcb7yvzpes6mddwkkv0.jpg",
 ];
 
 export default function RitualSteps() {

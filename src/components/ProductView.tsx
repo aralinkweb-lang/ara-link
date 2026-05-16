@@ -10,13 +10,13 @@ import QuantitySelector from "./QuantitySelector";
 
 function getProductImage(slug: string): string {
   if (slug.includes("ara-ice-bowl"))
-    return "https://images.unsplash.com/photo-1570194065650-d99fb4bedf0a?w=800&q=80";
+    return "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778867529/DSC04677_g0et5k.jpg";
   if (slug.includes("rose"))
-    return "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80";
+    return "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778867520/DSC07080_lqtbgu.jpg";
   if (slug.includes("beetroot"))
-    return "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=800&q=80";
+    return "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778867521/enhanced_04_qmz5l7.png";
   if (slug.includes("mint"))
-    return "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=800&q=80";
+    return "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778867521/DSC07076_fbwzgq.jpg";
   return "https://images.unsplash.com/photo-1501173727994-04cbcb2e3af1?w=800&q=80";
 }
 
@@ -30,16 +30,20 @@ export default function ProductView({ product }: ProductViewProps) {
     product.variants?.[0]
   );
   const [quantity, setQuantity] = useState(1);
-  const mainImage = getProductImage(product.slug);
-
-  const thumbnailImages = [
-    mainImage,
-    "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=200&q=70",
-    "https://images.unsplash.com/photo-1570194065650-d99fb4bedf0a?w=200&q=70",
-  ];
+  const fallbackImage = getProductImage(product.slug);
+  const variantImages = selectedVariant?.images ?? [];
+  const thumbnailImages = variantImages.length > 0
+    ? variantImages
+    : [
+      ];
   const [activeThumb, setActiveThumb] = useState(0);
 
-  const displayImage = activeThumb === 0 ? mainImage : thumbnailImages[activeThumb];
+  const displayImage = thumbnailImages[activeThumb] ?? thumbnailImages[0] ?? fallbackImage;
+
+  const handleSelectVariant = (variant: ProductVariant) => {
+    setSelectedVariant(variant);
+    setActiveThumb(0);
+  };
 
   const discount = Math.round(
     ((product.originalPrice - product.price) / product.originalPrice) * 100
@@ -83,7 +87,7 @@ export default function ProductView({ product }: ProductViewProps) {
               <button
                 key={i}
                 onClick={() => setActiveThumb(i)}
-                className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-colors flex-shrink-0 ${
+                className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-colors shrink-0 ${
                   activeThumb === i ? "border-brand" : "border-edge hover:border-brand/40"
                 }`}
               >
@@ -166,7 +170,7 @@ export default function ProductView({ product }: ProductViewProps) {
                 {product.variants.map((variant) => (
                   <button
                     key={variant.id}
-                    onClick={() => setSelectedVariant(variant)}
+                    onClick={() => handleSelectVariant(variant)}
                     title={variant.name}
                     className={`w-10 h-10 rounded-full border-2 transition-all ${
                       selectedVariant?.id === variant.id
