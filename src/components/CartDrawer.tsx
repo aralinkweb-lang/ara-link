@@ -160,12 +160,14 @@ export default function CartDrawer() {
 
 function getProductImage(slug: string): string {
   if (slug.includes("ara-ice-bowl"))
-    return "https://images.unsplash.com/photo-1570194065650-d99fb4bedf0a?w=400&q=80";
+    return "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778867529/DSC04677_g0et5k.jpg";
   if (slug.includes("rose"))
-    return "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80";
+    return "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778867523/enhanced_02_mthaft.png";
   if (slug.includes("beetroot"))
-    return "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&q=80";
+    return "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778867521/enhanced_04_qmz5l7.png";
   if (slug.includes("mint"))
-    return "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&q=80";
+    return "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778867521/DSC07076_fbwzgq.jpg";
+  if (slug.includes("orange"))
+    return "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778867520/enhanced_5_xhtujz.png";
   return "https://images.unsplash.com/photo-1501173727994-04cbcb2e3af1?w=400&q=80";
 }

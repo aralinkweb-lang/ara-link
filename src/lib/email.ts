@@ -203,10 +203,52 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
   const resend = new Resend(apiKey);
   const from = process.env.RESEND_FROM || "ARA Cold Therapy <orders@ara-skincare.com>";
 
-  await resend.emails.send({
+  const payload = {
     from,
     to: data.email,
     subject: `Your ARA order ${data.orderNumber} is confirmed!`,
     html: buildEmailHtml(data),
+  };
+
+  console.info("Sending order confirmation email via Resend", {
+    to: data.email,
+    from,
+    orderNumber: data.orderNumber,
+    resendKeyConfigured: Boolean(apiKey),
   });
+
+  try {
+    const result = await resend.emails.send(payload);
+
+    if (result.error) {
+      console.error("Resend order confirmation email returned error", {
+        to: data.email,
+        orderNumber: data.orderNumber,
+        from,
+        error: result.error,
+        headers: result.headers,
+      });
+      throw new Error(
+        `Resend error: ${result.error.name} - ${result.error.message} (${result.error.statusCode})`
+      );
+    }
+
+    console.info("Resend email sent successfully", {
+      messageId: result.data?.id,
+      headers: result.headers,
+      data: result.data,
+      to: data.email,
+      orderNumber: data.orderNumber,
+    });
+    return result;
+  } catch (error) {
+    console.error("Resend order confirmation email error", {
+      to: data.email,
+      orderNumber: data.orderNumber,
+      from,
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    throw error;
+  }
 }

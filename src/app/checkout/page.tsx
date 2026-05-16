@@ -16,17 +16,17 @@ const FREE_GIFTS = [
   {
     id: "ice-roller",
     name: "Ice Roller",
-    image: "https://images.unsplash.com/photo-1570194065650-d99fb4bedf0a?w=120&q=80",
+    image: "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778936807/iceroller_crcbyr.webp",
   },
   {
     id: "face-wash-brush",
     name: "Face Wash Brush",
-    image: "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=120&q=80",
+    image: "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778936906/shopping_gidbgi.webp",
   },
   {
     id: "hair-scalp-massager",
     name: "Hair Scalp Massager",
-    image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=120&q=80",
+    image: "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778936848/shopping_gq1rhy.webp",
   },
 ];
 
