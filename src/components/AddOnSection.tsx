@@ -31,7 +31,7 @@ export default function AddOnSection({ addons, currentProductId }: AddOnSectionP
   const visiblePowders = addons.filter((addon) => displayPowderIds.includes(addon.id));
   const comboPowders = addons.filter((addon) => displayPowderIds.includes(addon.id));
 
-  const comboPrice = comboPowders.reduce((total, addon) => total + addon.price, 0) - 100;
+  const comboPrice = comboPowders.reduce((total, addon) => total + addon.price, 0) - 300;
   const comboOriginalPrice = comboPowders.reduce((total, addon) => total + addon.originalPrice, 0);
   const comboName = "Combo Powder Kit";
   const comboDescription = isPowderProduct
@@ -83,7 +83,7 @@ export default function AddOnSection({ addons, currentProductId }: AddOnSectionP
     category: "Combos",
     stock: 999,
     sku: comboSku,
-    features: comboPowders.map((addon) => addon.name.replace(/ \(30g\)$/, "")),
+    features: comboPowders.map((addon) => addon.name.replace(/ \(100g\)$/, "")),
     rating: 4.8,
     reviewCount: 18,
     badges: ["Combo Kit"],
