@@ -33,6 +33,7 @@ export const products: Product[] = [
           "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778867526/DSC04682_znwy8c.jpg",
           "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778867531/DSC04668_dxnock.jpg",
           "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778867530/DSC04670_gk3wy5.jpg",
+          "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778957958/73652bed-e407-443a-afe9-00e2ca8edb88.png",
         ],
       },
       // {

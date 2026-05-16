@@ -35,11 +35,11 @@ export default function AddOnSection({ addons, currentProductId }: AddOnSectionP
   const comboOriginalPrice = comboPowders.reduce((total, addon) => total + addon.originalPrice, 0);
   const comboName = "Combo Powder Kit";
   const comboDescription = isPowderProduct
-    ? `Includes ${comboPowders.map((addon) => addon.name.replace(/ \(30g\)$/, "")).join(", ")}.`
-    : `Includes ${comboPowders.map((addon) => addon.name.replace(/ \(30g\)$/, "")).join(", ")} for a complete powder ritual.`;
+    ? `Includes ${comboPowders.map((addon) => addon.name.replace(/ \(100g\)$/, "")).join(", ")}.`
+    : `Includes ${comboPowders.map((addon) => addon.name.replace(/ \(100g\)$/, "")).join(", ")} for a complete powder ritual.`;
 
   const comboImages = comboPowders.length === 4
-    ? ["/images/combo-powder-kit-4.jpg"]
+    ? ["https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778957856/b69fade4-a765-4e8c-aa9b-c3cfcaed7d41.png"]
     : [
         "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778935304/Gemini_Generated_Image_fhe9z9fhe9z9fhe9_eyu4xy.png",
         "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778935693/Gemini_Generated_Image_ufbyzoufbyzoufby_ocursw.png",
@@ -56,8 +56,12 @@ export default function AddOnSection({ addons, currentProductId }: AddOnSectionP
       }[currentProductId ?? ""] ?? comboImages[0]
     : comboImages[0];
 
+  const comboKey = isPowderProduct ? `no-${currentProductId}` : "full";
+  const comboId = `combo-powder-kit-${comboKey}`;
+  const comboSku = `ARA-COMBO-POWDER-${comboKey.toUpperCase()}`;
+
   const comboAddon: AddOn = {
-    id: "combo-powder-kit",
+    id: comboId,
     name: comboName,
     description: comboDescription,
     price: Math.max(comboPrice, 1),
@@ -70,15 +74,15 @@ export default function AddOnSection({ addons, currentProductId }: AddOnSectionP
   const buildComboProduct = (): Product => ({
     id: comboAddon.id,
     name: comboAddon.name,
-    slug: "combo-powder-kit",
+    slug: comboId,
     description: comboAddon.description,
     shortDescription: comboAddon.description,
     price: comboAddon.price,
     originalPrice: comboAddon.originalPrice,
-    images: comboImages,
+    images: [comboIcon, ...comboImages.filter((image) => image !== comboIcon)],
     category: "Combos",
     stock: 999,
-    sku: "ARA-COMBO-POWDER",
+    sku: comboSku,
     features: comboPowders.map((addon) => addon.name.replace(/ \(30g\)$/, "")),
     rating: 4.8,
     reviewCount: 18,
