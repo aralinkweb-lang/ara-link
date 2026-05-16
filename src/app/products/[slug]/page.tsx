@@ -37,7 +37,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               Dissolve in your ice bowl water for enhanced benefits.
             </p>
           </div>
-          <AddOnSection addons={addOns} />
+          <AddOnSection addons={addOns} currentProductId={product.id} />
         </div>
       </section>
 

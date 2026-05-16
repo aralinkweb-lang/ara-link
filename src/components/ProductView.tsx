@@ -17,6 +17,9 @@ function getProductImage(slug: string): string {
     return "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778867521/enhanced_04_qmz5l7.png";
   if (slug.includes("mint"))
     return "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778867521/DSC07076_fbwzgq.jpg";
+   if (slug.includes("orange"))
+    return "https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778867520/enhanced_5_xhtujz.png";
+  
   return "https://images.unsplash.com/photo-1501173727994-04cbcb2e3af1?w=800&q=80";
 }
 
