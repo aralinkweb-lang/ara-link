@@ -24,8 +24,14 @@ export default function AddOnCard({ addon, onAdd, added }: AddOnCardProps) {
       }`}
     >
       {/* Icon */}
-      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-brand/10 flex items-center justify-center text-2xl">
-        {addon.icon}
+      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-brand/10 flex items-center justify-center text-2xl overflow-hidden">
+        {addon.icon && (addon.icon.startsWith?.("http") ? (
+          // render image when icon is a URL
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={addon.icon} alt={addon.name} className="w-10 h-10 object-cover rounded-lg" />
+        ) : (
+          <span>{addon.icon}</span>
+        ))}
       </div>
 
       {/* Content */}

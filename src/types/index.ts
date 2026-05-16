@@ -26,6 +26,7 @@ export interface ProductVariant {
   colorCode: string;
   additionalPrice: number;
   stock: number;
+  images?: string[];
 }
 
 // Cart Types
