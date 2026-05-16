@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Globe, MessageCircle, Play } from "lucide-react";
 import Image from "next/image";
+import { SocialIcon } from "next-social-icons";
 
 export default function Footer() {
   return (
@@ -10,44 +11,51 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="md:col-span-2">
             <div className="font-black text-3xl text-white tracking-tight mb-2">
-                         <Image src="/logo.png" alt="ARA" height={40} width={120} className="object-contain" priority />
+                         <Image src="https://res.cloudinary.com/dw4v1hkbj/image/upload/q_auto/f_auto/v1778956881/4e7b03a0-d766-4c8e-b025-3079c7fd0941.png" alt="ARA" height={40} width={120} className="object-contain" priority />
             </div>
-            <p className="text-sm font-semibold text-white/50 tracking-widest uppercase mb-4">
-              Cold Therapy · Made in India
-            </p>
-            <p className="text-sm text-white/60 leading-relaxed max-w-xs">
-              The morning ritual your skin has been waiting for. Premium cold
-              therapy tools crafted for the intentional Indian skincare routine.
-            </p>
+            
+            {/* Statement Section */}
+<div className="mt-5 flex flex-col items-center md:items-start text-center md:text-left">
+
+  <div className="space-y-1 leading-none">
+    <p className="text-3xl md:text-4xl font-light text-white">
+      We don't do
+    </p>
+
+    <p className="text-4xl md:text-5xl font-black uppercase text-white tracking-tight">
+      BLACK MAGIC
+    </p>
+
+    <p className="text-3xl md:text-4xl font-light text-white">
+      No overnight results
+    </p>
+
+    <p className="text-4xl md:text-5xl font-black uppercase text-white tracking-tight">
+      GUARANTEE
+    </p>
+  </div>
+</div>
             {/* Social Icons */}
             <div className="flex items-center gap-4 mt-6">
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/aralinkpvtltd?igsh=MTdwanYwZ3FrYzY2&utm_source=qr"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white/40 hover:text-white transition-colors"
                 aria-label="Instagram"
               >
-                <Globe className="w-5 h-5" />
+               <SocialIcon size={64} platform="instagram" inverse />
               </a>
               <a
-                href="https://twitter.com"
+                href="https://wa.me/917383940384"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white/40 hover:text-white transition-colors"
                 aria-label="Twitter / X"
               >
-                <MessageCircle className="w-5 h-5" />
+                <SocialIcon size={64} platform="whatsapp" inverse />
               </a>
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/40 hover:text-white transition-colors"
-                aria-label="YouTube"
-              >
-                <Play className="w-5 h-5" />
-              </a>
+             
             </div>
           </div>
 
@@ -153,7 +161,7 @@ export default function Footer() {
         {/* Copyright Row */}
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-white/40">
-            &copy; {new Date().getFullYear()} ARA Cold Therapy. All rights reserved.
+            &copy; {new Date().getFullYear()} Aralink Private Limited. All rights reserved.
           </p>
           <p className="text-xs text-white/40">
             Made with intention · India
