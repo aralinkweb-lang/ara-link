@@ -85,11 +85,7 @@ export default function CartDrawer() {
                     {/* Product Image */}
                     <div className="w-20 h-20 rounded-xl overflow-hidden bg-paper shrink-0 relative">
                       <Image
-                        src={
-                          item.product.slug.startsWith("combo-powder-kit") && item.product.images?.[0]
-                            ? item.product.images[0]
-                            : getProductImage(item.product.slug)
-                        }
+                        src={item.variant?.images?.[0] ?? item.product.images?.[0] ?? getProductImage(item.product.slug)}
                         alt={item.product.name}
                         fill
                         unoptimized
