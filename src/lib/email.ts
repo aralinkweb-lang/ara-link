@@ -56,7 +56,7 @@ function buildEmailHtml(data: OrderEmailData): string {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Order Confirmation – ARA Cold Therapy</title>
+  <title>Order Confirmation – ARA </title>
 </head>
 <body style="margin:0;padding:0;background:#f8f5ff;font-family:'Segoe UI',Arial,sans-serif;">
 
@@ -69,7 +69,7 @@ function buildEmailHtml(data: OrderEmailData): string {
         <tr>
           <td style="background:linear-gradient(135deg,#7c3aed 0%,#a855f7 100%);border-radius:20px 20px 0 0;padding:40px 36px;text-align:center;">
             <div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-0.5px;">ARA</div>
-            <div style="font-size:11px;font-weight:600;color:#ddd6fe;letter-spacing:3px;text-transform:uppercase;margin-top:2px;">Cold Therapy</div>
+            <div style="font-size:11px;font-weight:600;color:#ddd6fe;letter-spacing:3px;text-transform:uppercase;margin-top:2px;"></div>
             <div style="margin-top:24px;width:56px;height:56px;background:rgba(255,255,255,0.15);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
               <span style="font-size:28px;">📦</span>
             </div>
@@ -175,12 +175,12 @@ function buildEmailHtml(data: OrderEmailData): string {
         <!-- Footer -->
         <tr>
           <td style="background:#1a1a2e;border-radius:0 0 20px 20px;padding:28px 36px;text-align:center;">
-            <div style="font-size:18px;font-weight:900;color:#a78bfa;margin-bottom:4px;">ARA Cold Therapy</div>
+            <div style="font-size:18px;font-weight:900;color:#a78bfa;margin-bottom:4px;">ARA</div>
             <p style="margin:0 0 12px;font-size:12px;color:#6b7280;">
               Questions? Reply to this email or contact us at support@ara-skincare.com
             </p>
             <p style="margin:0;font-size:11px;color:#4b5563;">
-              © ${new Date().getFullYear()} ARA Cold Therapy · All rights reserved
+              © ${new Date().getFullYear()} Aralink Pvt. Ltd. · All rights reserved
             </p>
           </td>
         </tr>
@@ -201,7 +201,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
   }
 
   const resend = new Resend(apiKey);
-  const from = process.env.RESEND_FROM || "ARA Cold Therapy <orders@ara-skincare.com>";
+  const from = process.env.RESEND_FROM || "ARA  <orders@ara-skincare.com>";
 
   const payload = {
     from,
