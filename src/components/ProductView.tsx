@@ -1,11 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Star, ShoppingBag, Zap, ShieldCheck, Leaf, RefreshCw } from "lucide-react";
 import type { Product, ProductVariant } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/store/cart";
+import {
+  trackViewContent,
+  trackAddToCart,
+  trackCustomizeProduct,
+  trackInitiateCheckout,
+} from "@/lib/metaPixel";
 import QuantitySelector from "./QuantitySelector";
 
 function getProductImage(slug: string): string {
@@ -33,6 +39,19 @@ export default function ProductView({ product }: ProductViewProps) {
     product.variants?.[0]
   );
   const [quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    trackViewContent({
+      content_ids: [product.id],
+      content_name: product.name,
+      content_category: product.category,
+      content_type: "product",
+      value: product.price,
+      currency: "INR",
+      contents: [{ id: product.id, quantity: 1, item_price: product.price }],
+    });
+  }, [product.id, product.name, product.category, product.price]);
+
   const fallbackImage = getProductImage(product.slug);
   const variantImages = selectedVariant?.images ?? [];
   const thumbnailImages = variantImages.length > 0
@@ -46,7 +65,14 @@ export default function ProductView({ product }: ProductViewProps) {
   const handleSelectVariant = (variant: ProductVariant) => {
     setSelectedVariant(variant);
     setActiveThumb(0);
+    trackCustomizeProduct({
+      content_ids: [product.id],
+      content_name: product.name,
+      content_category: product.category,
+    });
   };
+
+  const unitPrice = product.price + (selectedVariant?.additionalPrice ?? 0);
 
   const discount = Math.round(
     ((product.originalPrice - product.price) / product.originalPrice) * 100
@@ -55,10 +81,33 @@ export default function ProductView({ product }: ProductViewProps) {
 
   const handleAddToCart = () => {
     addItem(product, quantity, selectedVariant);
+    trackAddToCart({
+      content_ids: [product.id],
+      content_name: product.name,
+      content_category: product.category,
+      value: unitPrice * quantity,
+      currency: "INR",
+      contents: [{ id: product.id, quantity, item_price: unitPrice }],
+    });
   };
 
   const handleOrderNow = () => {
     addItem(product, quantity, selectedVariant);
+    trackAddToCart({
+      content_ids: [product.id],
+      content_name: product.name,
+      content_category: product.category,
+      value: unitPrice * quantity,
+      currency: "INR",
+      contents: [{ id: product.id, quantity, item_price: unitPrice }],
+    });
+    trackInitiateCheckout({
+      content_ids: [product.id],
+      contents: [{ id: product.id, quantity, item_price: unitPrice }],
+      num_items: quantity,
+      value: unitPrice * quantity,
+      currency: "INR",
+    });
     window.location.href = "/checkout";
   };
 

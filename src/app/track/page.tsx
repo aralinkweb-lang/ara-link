@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, Package, CheckCircle, Truck, MapPin, Clock, RefreshCw } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
+import { trackSearch } from "@/lib/metaPixel";
 
 interface OrderItem {
   productId: string;
@@ -165,6 +166,12 @@ function TrackContent() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    if (orderInput.trim()) {
+      trackSearch({
+        search_string: orderInput.trim(),
+        content_category: "order_tracking",
+      });
+    }
     fetchOrder(orderInput);
   };
 
