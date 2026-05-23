@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { Product } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/store/cart";
+import { trackAddToCart, trackInitiateCheckout } from "@/lib/metaPixel";
 import { Zap } from "lucide-react";
 
 interface StickyOrderCTAProps {
@@ -33,6 +34,21 @@ export default function StickyOrderCTA({ product }: StickyOrderCTAProps) {
 
   const handleOrderNow = () => {
     addItem(product, 1);
+    trackAddToCart({
+      content_ids: [product.id],
+      content_name: product.name,
+      content_category: product.category,
+      value: product.price,
+      currency: "INR",
+      contents: [{ id: product.id, quantity: 1, item_price: product.price }],
+    });
+    trackInitiateCheckout({
+      content_ids: [product.id],
+      contents: [{ id: product.id, quantity: 1, item_price: product.price }],
+      num_items: 1,
+      value: product.price,
+      currency: "INR",
+    });
     window.location.href = "/checkout";
   };
 

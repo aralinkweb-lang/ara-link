@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Globe, MessageCircle, Play } from "lucide-react";
 import Image from "next/image";
 import { SocialIcon } from "next-social-icons";
+import ContactLink from "./ContactLink";
 
 export default function Footer() {
   return (
@@ -37,24 +38,26 @@ export default function Footer() {
 </div>
             {/* Social Icons */}
             <div className="flex items-center gap-4 mt-6">
-              <a
+              <ContactLink
                 href="https://www.instagram.com/aralinkpvtltd?igsh=MTdwanYwZ3FrYzY2&utm_source=qr"
+                channel="Instagram"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white/40 hover:text-white transition-colors"
                 aria-label="Instagram"
               >
                <SocialIcon size={64} platform="instagram" inverse />
-              </a>
-              <a
+              </ContactLink>
+              <ContactLink
                 href="https://wa.me/917383940384"
+                channel="WhatsApp"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white/40 hover:text-white transition-colors"
-                aria-label="Twitter / X"
+                aria-label="WhatsApp"
               >
                 <SocialIcon size={64} platform="whatsapp" inverse />
-              </a>
+              </ContactLink>
              
             </div>
           </div>
@@ -123,12 +126,13 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a
+                <ContactLink
                   href="mailto:hello@aracoltherapy.com"
+                  channel="Email"
                   className="text-sm text-white/70 hover:text-white transition-colors"
                 >
                   Contact Us
-                </a>
+                </ContactLink>
               </li>
               <li>
                 <Link

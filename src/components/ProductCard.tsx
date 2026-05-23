@@ -6,6 +6,7 @@ import { Star, ShoppingBag } from "lucide-react";
 import type { Product } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/store/cart";
+import { trackAddToCart } from "@/lib/metaPixel";
 
 function getProductImage(slug: string): string {
   if (slug.includes("ara-ice-bowl"))
@@ -37,6 +38,18 @@ export default function ProductCard({ product }: ProductCardProps) {
   const discount = getDiscountPercent(product.originalPrice, product.price);
   const imageSrc = getProductImage(product.slug);
 
+  const handleAdd = () => {
+    addItem(product, 1);
+    trackAddToCart({
+      content_ids: [product.id],
+      content_name: product.name,
+      content_category: product.category,
+      value: product.price,
+      currency: "INR",
+      contents: [{ id: product.id, quantity: 1, item_price: product.price }],
+    });
+  };
+
   return (
     <div className="group relative bg-white rounded-3xl border border-edge overflow-hidden hover:border-brand/40 transition-all duration-300 hover:shadow-[var(--card-shadow-hover)]">
       {/* Image */}
@@ -54,7 +67,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <button
               onClick={(e) => {
                 e.preventDefault();
-                addItem(product, 1);
+                handleAdd();
               }}
               className="bg-white text-ink rounded-2xl px-5 py-2.5 font-semibold text-sm hover:bg-brand hover:text-white transition-colors flex items-center gap-2 shadow-lg"
             >
@@ -107,7 +120,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             </span>
           </div>
           <button
-            onClick={() => addItem(product, 1)}
+            onClick={handleAdd}
             className="bg-brand text-white rounded-xl p-2 hover:bg-brand-hover transition-colors"
             aria-label="Add to cart"
           >

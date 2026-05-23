@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { AddOn, Product } from "@/types";
 import { useCart } from "@/store/cart";
 import { getProductById } from "@/data/products";
+import { trackAddToCart } from "@/lib/metaPixel";
 import AddOnCard from "./AddOnCard";
 
 interface AddOnSectionProps {
@@ -100,6 +101,14 @@ export default function AddOnSection({ addons, currentProductId }: AddOnSectionP
         addItem(product, 1);
       }
     }
+    trackAddToCart({
+      content_ids: [addon.id],
+      content_name: addon.name,
+      content_category: "Add-on",
+      value: addon.price,
+      currency: "INR",
+      contents: [{ id: addon.id, quantity: 1, item_price: addon.price }],
+    });
     setAddedIds((prev) => new Set([...prev, addon.id]));
   };
 

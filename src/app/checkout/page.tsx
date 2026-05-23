@@ -7,6 +7,13 @@ import Image from "next/image";
 import { useCart } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
 import { indianStates } from "@/data/products";
+import {
+  trackInitiateCheckout,
+  trackAddPaymentInfo,
+  trackLead,
+  trackPurchase,
+  trackCompleteRegistration,
+} from "@/lib/metaPixel";
 import { Gift, ShieldCheck, Truck, ChevronRight, CreditCard, Banknote, CheckCircle2 } from "lucide-react";
 
 const FREE_GIFT_THRESHOLD = 399;
@@ -91,6 +98,24 @@ export default function CheckoutPage() {
     return () => { if (document.body.contains(script)) document.body.removeChild(script); };
   }, []);
 
+  // Fire InitiateCheckout once when checkout page is reached with items
+  useEffect(() => {
+    if (items.length === 0) return;
+    trackInitiateCheckout({
+      content_ids: items.map((i) => i.product.id),
+      contents: items.map((i) => ({
+        id: i.product.id,
+        quantity: i.quantity,
+        item_price: i.product.price + (i.variant?.additionalPrice ?? 0),
+      })),
+      num_items: items.reduce((n, i) => n + i.quantity, 0),
+      value: subtotal,
+      currency: "INR",
+    });
+    // Only on first mount with items — subtotal/items changes during edit should not re-fire.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Clear gift selection if cart drops below threshold
   useEffect(() => {
     if (!giftUnlocked) setSelectedGift(null);
@@ -120,6 +145,22 @@ export default function CheckoutPage() {
   const onStep1Submit = (data: CheckoutFormData) => {
     setSavedFormData(data);
     setStep(2);
+    trackLead({
+      content_name: "Checkout — Delivery details submitted",
+      content_category: "checkout_step_1",
+      value: subtotal,
+      currency: "INR",
+    });
+    trackAddPaymentInfo({
+      content_ids: items.map((i) => i.product.id),
+      contents: items.map((i) => ({
+        id: i.product.id,
+        quantity: i.quantity,
+        item_price: i.product.price + (i.variant?.additionalPrice ?? 0),
+      })),
+      value: subtotal,
+      currency: "INR",
+    });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -172,6 +213,24 @@ export default function CheckoutPage() {
           if (verifyRes.ok) {
             const verifyData = await verifyRes.json();
             const trackId = verifyData.awbCode || verifyData.orderNumber || orderData.orderNumber;
+            trackPurchase({
+              content_ids: items.map((i) => i.product.id),
+              contents: items.map((i) => ({
+                id: i.product.id,
+                quantity: i.quantity,
+                item_price: i.product.price + (i.variant?.additionalPrice ?? 0),
+              })),
+              num_items: items.reduce((n, i) => n + i.quantity, 0),
+              value: total,
+              currency: "INR",
+              order_id: verifyData.orderNumber || orderData.orderNumber,
+            });
+            trackCompleteRegistration({
+              content_name: "Checkout — Online payment",
+              status: "completed",
+              value: total,
+              currency: "INR",
+            });
             clearCart();
             router.push(`/track?order=${encodeURIComponent(trackId)}`);
           }
@@ -202,6 +261,24 @@ export default function CheckoutPage() {
       if (!res.ok) throw new Error("Failed to place COD order");
       const data = await res.json();
       const trackId = data.awbCode || data.orderNumber;
+      trackPurchase({
+        content_ids: items.map((i) => i.product.id),
+        contents: items.map((i) => ({
+          id: i.product.id,
+          quantity: i.quantity,
+          item_price: i.product.price + (i.variant?.additionalPrice ?? 0),
+        })),
+        num_items: items.reduce((n, i) => n + i.quantity, 0),
+        value: codTotal,
+        currency: "INR",
+        order_id: data.orderNumber,
+      });
+      trackCompleteRegistration({
+        content_name: "Checkout — Cash on Delivery",
+        status: "completed",
+        value: codTotal,
+        currency: "INR",
+      });
       clearCart();
       router.push(`/track?order=${encodeURIComponent(trackId)}`);
     } catch (err) {

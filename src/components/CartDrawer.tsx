@@ -2,6 +2,7 @@
 
 import { useCart } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
+import { trackInitiateCheckout } from "@/lib/metaPixel";
 import Image from "next/image";
 import Link from "next/link";
 import { X, Trash2, ShoppingBag } from "lucide-react";
@@ -146,7 +147,20 @@ export default function CartDrawer() {
             </p>
             <Link
               href="/checkout"
-              onClick={closeCart}
+              onClick={() => {
+                trackInitiateCheckout({
+                  content_ids: items.map((i) => i.product.id),
+                  contents: items.map((i) => ({
+                    id: i.product.id,
+                    quantity: i.quantity,
+                    item_price: i.product.price + (i.variant?.additionalPrice ?? 0),
+                  })),
+                  num_items: itemCount,
+                  value: subtotal,
+                  currency: "INR",
+                });
+                closeCart();
+              }}
               className="block w-full bg-brand text-white rounded-2xl px-6 py-3.5 font-semibold text-sm text-center hover:bg-brand-hover transition-colors"
             >
               Proceed to Checkout
