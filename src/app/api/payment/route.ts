@@ -22,13 +22,21 @@ export async function POST(request: NextRequest) {
 
     // Calculate totals
     const subtotal = items.reduce(
-      (sum: number, item: { price: number; quantity: number }) => 
+      (sum: number, item: { price: number; quantity: number }) =>
         sum + item.price * item.quantity,
       0
     );
 
-    // Create Razorpay order
-    const razorpayOrder = await createRazorpayOrder(amount, orderNumber);
+    // 5% prepaid discount — recomputed server-side so the client cannot lie.
+    const discount = Math.round(subtotal * 0.05);
+    const total = subtotal - discount;
+
+    if (Math.abs(amount - total) > 1) {
+      console.warn("Client/server prepaid total mismatch", { amount, total });
+    }
+
+    // Create Razorpay order (server-authoritative amount)
+    const razorpayOrder = await createRazorpayOrder(total, orderNumber);
 
     // Create order in database
     const order = await createOrder({
@@ -37,8 +45,9 @@ export async function POST(request: NextRequest) {
       shippingAddress,
       subtotal,
       shipping: 0,
-      discount: 0,
-      total: amount,
+      discount,
+      total,
+      paymentMethod: "razorpay",
       paymentStatus: "pending",
       razorpayOrderId: razorpayOrder.id,
       orderStatus: "pending",
@@ -58,7 +67,7 @@ export async function POST(request: NextRequest) {
       items: items.map((i: { productName: string; quantity: number; variant?: string }) =>
         `${i.productName}${i.variant ? ` (${i.variant})` : ""} x${i.quantity}`
       ).join(", "),
-      total: amount,
+      total,
       paymentMethod: "Razorpay",
       paymentStatus: "pending",
       orderStatus: "pending",

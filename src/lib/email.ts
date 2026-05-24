@@ -6,6 +6,7 @@ interface OrderEmailData {
   email: string;
   items: Array<{ productName: string; quantity: number; price: number; variant?: string }>;
   subtotal: number;
+  discount?: number;
   total: number;
   paymentMethod: string;
   shippingAddress: {
@@ -129,6 +130,11 @@ function buildEmailHtml(data: OrderEmailData): string {
                 <td style="padding:6px 16px 6px;font-size:13px;color:#6b7280;">Shipping</td>
                 <td style="padding:6px 16px 6px;text-align:right;font-size:13px;font-weight:600;color:#16a34a;">Free</td>
               </tr>
+              ${data.discount && data.discount > 0 ? `
+              <tr style="background:#faf5ff;">
+                <td style="padding:6px 16px 6px;font-size:13px;color:#6b7280;">Prepaid discount (5%)</td>
+                <td style="padding:6px 16px 6px;text-align:right;font-size:13px;font-weight:600;color:#16a34a;">−${formatPrice(data.discount)}</td>
+              </tr>` : ""}
               <tr style="background:#f3f0ff;">
                 <td style="padding:16px 16px;font-size:16px;font-weight:900;color:#7c3aed;">Total</td>
                 <td style="padding:16px 16px;text-align:right;font-size:16px;font-weight:900;color:#7c3aed;">${formatPrice(data.total)}</td>

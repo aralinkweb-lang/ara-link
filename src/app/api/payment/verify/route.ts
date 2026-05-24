@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
           email: addr.email,
           items: updatedOrder.items,
           subtotal: updatedOrder.subtotal,
+          discount: updatedOrder.discount,
           total: updatedOrder.total,
           paymentMethod: "online",
           shippingAddress: addr,
