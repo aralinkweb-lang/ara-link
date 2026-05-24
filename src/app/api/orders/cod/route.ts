@@ -8,9 +8,9 @@ import { sendOrderConfirmationEmail } from "@/lib/email";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { amount, items, shippingAddress, discount, couponCode } = body;
+    const { items, shippingAddress, couponCode } = body;
 
-    if (!amount || !items || !shippingAddress) {
+    if (!items || !shippingAddress) {
       return NextResponse.json(
         { success: false, error: "Missing required fields" },
         { status: 400 }
@@ -25,14 +25,17 @@ export async function POST(request: NextRequest) {
       0
     );
 
+    // COD is free — server-authoritative totals.
+    const total = subtotal;
+
     const order = await createOrder({
       orderNumber,
       items,
       shippingAddress,
       subtotal,
       shipping: 0,
-      discount: discount ?? 0,
-      total: amount,
+      discount: 0,
+      total,
       couponCode: couponCode ?? null,
       paymentStatus: "pending",
       paymentMethod: "cod",
@@ -66,7 +69,8 @@ export async function POST(request: NextRequest) {
         email: shippingAddress.email,
         items,
         subtotal,
-        total: amount,
+        discount: 0,
+        total,
         paymentMethod: "cod",
         shippingAddress,
         awbCode,
@@ -90,7 +94,7 @@ export async function POST(request: NextRequest) {
       items: items.map((i: { productName: string; quantity: number; variant?: string }) =>
         `${i.productName}${i.variant ? ` (${i.variant})` : ""} x${i.quantity}`
       ).join(", "),
-      total: amount,
+      total,
       paymentMethod: "COD",
       paymentStatus: "pending",
       orderStatus: "confirmed",

@@ -14,10 +14,10 @@ import {
   trackPurchase,
   trackCompleteRegistration,
 } from "@/lib/metaPixel";
-import { Gift, ShieldCheck, Truck, ChevronRight, CreditCard, Banknote, CheckCircle2 } from "lucide-react";
+import { Gift, ShieldCheck, Truck, ChevronRight, CreditCard, Banknote, CheckCircle2, Sparkles } from "lucide-react";
 
 const FREE_GIFT_THRESHOLD = 399;
-const COD_CHARGE = 29;
+const PREPAID_DISCOUNT_RATE = 0.05;
 
 const FREE_GIFTS = [
   {
@@ -81,10 +81,16 @@ export default function CheckoutPage() {
   const [savedFormData, setSavedFormData] = useState<CheckoutFormData | null>(null);
   const [selectedGift, setSelectedGift] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "cod">("razorpay");
 
   const subtotal = getSubtotal();
-  const total = subtotal;
-  const codTotal = subtotal + COD_CHARGE;
+  const prepaidDiscount = Math.round(subtotal * PREPAID_DISCOUNT_RATE);
+  const prepaidTotal = subtotal - prepaidDiscount;
+  const codTotal = subtotal;
+  const activeTotal = paymentMethod === "razorpay" ? prepaidTotal : codTotal;
+  const continueLabel = paymentMethod === "razorpay"
+    ? "Continue with Razorpay"
+    : "Continue with Cash on Delivery";
   const giftUnlocked = subtotal >= FREE_GIFT_THRESHOLD;
   const amountToGift = FREE_GIFT_THRESHOLD - subtotal;
 
@@ -174,7 +180,8 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           items: buildOrderItems(),
           shippingAddress: { ...savedFormData, country: "India" },
-          amount: total,
+          amount: prepaidTotal,
+          discount: prepaidDiscount,
           freeGift: giftUnlocked && selectedGift ? selectedGift : null,
         }),
       });
@@ -221,14 +228,14 @@ export default function CheckoutPage() {
                 item_price: i.product.price + (i.variant?.additionalPrice ?? 0),
               })),
               num_items: items.reduce((n, i) => n + i.quantity, 0),
-              value: total,
+              value: prepaidTotal,
               currency: "INR",
               order_id: verifyData.orderNumber || orderData.orderNumber,
             });
             trackCompleteRegistration({
               content_name: "Checkout — Online payment",
               status: "completed",
-              value: total,
+              value: prepaidTotal,
               currency: "INR",
             });
             clearCart();
@@ -409,29 +416,95 @@ export default function CheckoutPage() {
                     Choose Payment Method
                   </h2>
                   <div className="flex flex-col gap-3">
-                    <button onClick={handlePayOnline} disabled={isLoading} className="w-full bg-brand text-white rounded-2xl px-6 py-4 font-bold text-base hover:bg-brand-hover transition-colors shadow-lg shadow-brand/25 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-between gap-3">
+                    {/* Razorpay selection card */}
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("razorpay")}
+                      disabled={isLoading}
+                      aria-pressed={paymentMethod === "razorpay"}
+                      className={`w-full rounded-2xl border-2 px-6 py-4 text-left transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-between gap-3 ${
+                        paymentMethod === "razorpay"
+                          ? "border-brand bg-brand/5"
+                          : "border-edge bg-white hover:border-brand/40"
+                      }`}
+                    >
                       <div className="flex items-center gap-3">
-                        <CreditCard className="w-5 h-5 shrink-0" />
+                        <CreditCard className="w-5 h-5 shrink-0 text-brand" />
                         <div className="text-left">
-                          <p className="font-bold text-sm">Pay Online</p>
-                          <p className="text-xs opacity-80">UPI · Cards · Netbanking · Wallets</p>
+                          <p className="font-bold text-sm flex items-center gap-2 text-ink">
+                            Pay Online
+                            {prepaidDiscount > 0 && (
+                              <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                                Save 5%
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-xs text-ink-muted">UPI · Cards · Netbanking · Wallets</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-base font-black">{formatPrice(total)}</span>
-                        <ChevronRight className="w-4 h-4" />
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          {prepaidDiscount > 0 && (
+                            <span className="text-xs text-ink-muted line-through">{formatPrice(subtotal)}</span>
+                          )}
+                          <span className="text-base font-black text-ink">{formatPrice(prepaidTotal)}</span>
+                        </div>
+                        <span
+                          className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center ${
+                            paymentMethod === "razorpay" ? "border-brand bg-brand" : "border-edge"
+                          }`}
+                          aria-hidden
+                        >
+                          {paymentMethod === "razorpay" && (
+                            <span className="w-2 h-2 rounded-full bg-white" />
+                          )}
+                        </span>
                       </div>
                     </button>
-                    <button onClick={handleCOD} disabled={isLoading} className="w-full bg-white border-2 border-edge text-ink rounded-2xl px-6 py-4 font-bold text-base hover:border-brand hover:text-brand transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-between gap-3">
+
+                    {/* COD selection card */}
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("cod")}
+                      disabled={isLoading}
+                      aria-pressed={paymentMethod === "cod"}
+                      className={`w-full rounded-2xl border-2 px-6 py-4 text-left transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-between gap-3 ${
+                        paymentMethod === "cod"
+                          ? "border-brand bg-brand/5"
+                          : "border-edge bg-white hover:border-brand/40"
+                      }`}
+                    >
                       <div className="flex items-center gap-3">
-                        <Banknote className="w-5 h-5 shrink-0" />
+                        <Banknote className="w-5 h-5 shrink-0 text-brand" />
                         <div className="text-left">
-                          <p className="font-bold text-sm">Cash on Delivery</p>
-                          <p className="text-xs text-ink-muted">Pay when your order arrives · +{formatPrice(COD_CHARGE)} COD fee</p>
+                          <p className="font-bold text-sm text-ink">Cash on Delivery</p>
+                          <p className="text-xs text-ink-muted">Pay when your order arrives · No extra fee</p>
                         </div>
                       </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-base font-black text-ink">{formatPrice(codTotal)}</span>
+                        <span
+                          className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center ${
+                            paymentMethod === "cod" ? "border-brand bg-brand" : "border-edge"
+                          }`}
+                          aria-hidden
+                        >
+                          {paymentMethod === "cod" && (
+                            <span className="w-2 h-2 rounded-full bg-white" />
+                          )}
+                        </span>
+                      </div>
+                    </button>
+
+                    {/* Single Continue button — dispatches to the selected method */}
+                    <button
+                      onClick={paymentMethod === "razorpay" ? handlePayOnline : handleCOD}
+                      disabled={isLoading}
+                      className="mt-2 w-full bg-brand text-white rounded-2xl px-6 py-4 font-bold text-base hover:bg-brand-hover transition-colors shadow-lg shadow-brand/25 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-between gap-3"
+                    >
+                      <span>{continueLabel}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-base font-black">{formatPrice(codTotal)}</span>
+                        <span className="text-base font-black">{formatPrice(activeTotal)}</span>
                         <ChevronRight className="w-4 h-4" />
                       </div>
                     </button>
@@ -550,15 +623,17 @@ export default function CheckoutPage() {
                     <span className="font-semibold text-green-600">Free</span>
                   </div>
                 )}
-                {step === 2 && (
-                  <div className="flex justify-between text-amber-700">
-                    <span className="flex items-center gap-1"><Banknote className="w-3.5 h-3.5" />COD fee</span>
-                    <span className="font-semibold">+{formatPrice(COD_CHARGE)}</span>
+                {step === 2 && paymentMethod === "razorpay" && prepaidDiscount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span className="flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5" />Prepaid discount (5%)
+                    </span>
+                    <span className="font-semibold">−{formatPrice(prepaidDiscount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between pt-3 border-t border-edge">
                   <span className="font-black text-base text-ink">Total</span>
-                  <span className="font-black text-base text-ink">{formatPrice(total)}</span>
+                  <span className="font-black text-base text-ink">{formatPrice(activeTotal)}</span>
                 </div>
               </div>
 
